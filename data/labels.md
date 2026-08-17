@@ -6,12 +6,50 @@ This is the canonical definition source — the synthetic data generators
 and the eventual classifier and CAPA-lookup node should all trace back to
 this file rather than re-deriving definitions independently.
 
-**Status: first draft.** Written from general clinical-trial-operations
-knowledge, not yet validated against ICH E6(R3) or real FDA Warning Letter
-language (Chunk 1.2). Treat category boundaries as provisional until that
-reading pass happens — they're specific enough to drive consistent labeling
-today, but the wording may need to shift once compared to real regulatory
-text.
+**Status: checked against regulatory sources (Chunk 1.2).** Category
+definitions below were originally written from general clinical-trial-ops
+knowledge; this pass compared them against real regulatory language and
+adjusted the framing accordingly (see Regulatory basis).
+
+## Regulatory basis
+
+- The "protocol deviation" definition itself traces to **ICH E3(R1)**
+  (Clinical Study Reports) — "any change, divergence, or departure from the
+  study design or procedures defined in the protocol" — not ICH E6(R3) as
+  originally assumed. E6(R3) is the broader Good Clinical Practice /
+  quality-management guideline; it doesn't define "deviation" itself.
+- The directly operative framework is FDA's **December 2024 draft
+  guidance**, *"Protocol Deviations for Clinical Investigations of Drugs,
+  Biological Products, and Devices."* It classifies deviations along two
+  axes: **Important vs. Not Important** (impact on subject rights/safety/
+  well-being or on data completeness, accuracy, and reliability) crossed
+  with **Intentional/Planned vs. Unintentional**.
+- **This project's 5-category scheme does not map 1:1 onto that
+  taxonomy, and that's worth being explicit about:**
+  - `major` ≈ FDA's "important deviation" concept.
+  - `minor` ≈ "not important deviation."
+  - `technical` and `administrative` are **not official regulatory
+    categories** — they're a root-cause sub-typing I added on top of the
+    importance axis, useful for routing CAPA ownership (a technical
+    deviation routes to IT/facilities/quality-systems; an administrative
+    one routes to regulatory-affairs/site training), but not vocabulary
+    FDA or ICH use.
+  - `unreported` doesn't correspond to either FDA axis — it's a
+    reporting-compliance flag that could in principle apply regardless of
+    importance or intentionality, consistent with its "orthogonal" framing
+    below.
+  - The FDA guidance's **intentional/planned vs. unintentional** axis has
+    no equivalent in this scheme at all. Every category here implicitly
+    assumes unintentional deviations; a deliberate, pre-agreed deviation
+    (e.g. enrolling a borderline-eligible subject by sponsor/site
+    agreement) isn't represented. Worth reconsidering if this taxonomy
+    needs to support planned deviations later.
+- A real FDA warning letter reviewed for this pass (an unblinded assessor
+  conducting efficacy assessments) showed what "adequate CAPA" looks like
+  in practice: the FDA rejected a corrective action plan for lacking
+  specifics on retraining, reassessment, added monitoring checkpoints, and
+  named responsibility/timelines. Worth reusing that structure when Phase 4
+  builds the memo-drafting prompt.
 
 ## major
 
