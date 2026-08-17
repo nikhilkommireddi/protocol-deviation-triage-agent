@@ -55,7 +55,7 @@ TRAILING_CLAUSES = [
 
 TEMPLATES: dict[str, list[str]] = {
     "major": [
-        "Subject {subject_id} at {site} received a {dose_error} of {drug} during {visit}, deviating from the protocol-specified dosing regimen.",
+        "Subject {subject_id} at {site} received {dose_error} of {drug} during {visit}, deviating from the protocol-specified dosing regimen.",
         "Subject {subject_id} was enrolled at {site} despite meeting exclusion criterion related to {exclusion_reason}, which was not identified during screening.",
         "The treatment assignment for Subject {subject_id} was inadvertently unblinded to site staff at {site} after a randomization system error.",
         "{visit} procedures, including a protocol-mandated biopsy, were performed on Subject {subject_id} at {site} before written informed consent was obtained.",
@@ -102,7 +102,7 @@ TEMPLATES: dict[str, list[str]] = {
     ],
 }
 
-DOSE_ERRORS = ["double dose", "half of the prescribed dose", "an infusion rate exceeding the protocol maximum", "an incorrect drug kit"]
+DOSE_ERRORS = ["a double dose", "half of the prescribed dose", "an infusion at a rate exceeding the protocol maximum", "an incorrect kit"]
 EXCLUSION_REASONS = [
     "a prohibited concomitant condition", "prior participation in a conflicting investigational study",
     "renal function outside the eligible range", "an excluded prior therapy",
