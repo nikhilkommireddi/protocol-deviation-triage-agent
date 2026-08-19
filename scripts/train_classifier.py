@@ -94,12 +94,26 @@ def main() -> None:
         args.model_name, num_labels=len(CATEGORIES), id2label=ID2LABEL, label2id=LABEL2ID
     )
 
+    # transformers>=5 dropped warmup_ratio from TrainingArguments in favor of
+    # a raw step count -- compute the equivalent ourselves (10% of total steps).
+    steps_per_epoch = max(1, len(tokenized["train"]) // args.batch_size)
+    total_steps = steps_per_epoch * args.epochs
+    warmup_steps = max(1, int(0.1 * total_steps))
+
     training_args = TrainingArguments(
         output_dir=str(args.output_dir / "checkpoints"),
         per_device_train_batch_size=args.batch_size,
         per_device_eval_batch_size=args.batch_size,
         num_train_epochs=args.epochs,
         learning_rate=args.learning_rate,
+        warmup_steps=warmup_steps,
+        max_grad_norm=1.0,
+        fp16=False,
+        bf16=False,
+        # torch.optim.AdamW corrupts every model parameter to NaN on this
+        # setup even with clean gradients and clipping (reproduced on
+        # torch 2.6.0 and 2.13.0 CPU builds) -- Adafactor sidesteps it.
+        optim="adafactor",
         eval_strategy="epoch",
         save_strategy="epoch",
         save_total_limit=1,
