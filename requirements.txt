@@ -1,1 +1,8 @@
 anthropic
+transformers
+torch
+datasets
+scikit-learn
+accelerate
+sentencepiece
+protobuf
