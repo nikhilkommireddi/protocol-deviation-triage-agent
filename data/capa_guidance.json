@@ -1,0 +1,50 @@
+{
+  "major": {
+    "routing_team": "Safety / Regulatory Affairs",
+    "regulatory_reference": "Important protocol deviation under FDA's December 2024 draft guidance (Protocol Deviations for Clinical Investigations of Drugs, Biological Products, and Devices); base deviation definition per ICH E3(R1). Requires expedited IRB/sponsor reporting.",
+    "required_capa_elements": [
+      "Retraining on the specific procedure or safeguard that failed",
+      "Reassessment of the affected subject(s) where clinically feasible",
+      "An added monitoring checkpoint to catch recurrence before it reaches a subject",
+      "A named responsible party and a completion timeline"
+    ]
+  },
+  "minor": {
+    "routing_team": "Site Quality / Clinical Operations",
+    "regulatory_reference": "Not-important protocol deviation under FDA's December 2024 draft guidance; no expedited reporting requirement, but should still be logged and trended.",
+    "required_capa_elements": [
+      "Documentation of the deviation and its no-impact rationale in the site file",
+      "A named responsible party for closing the log entry",
+      "Trending across the site to confirm this stays isolated rather than becoming a pattern"
+    ]
+  },
+  "technical": {
+    "routing_team": "IT / Facilities / Quality Systems",
+    "regulatory_reference": "Root-cause sub-type, not an official FDA/ICH category (see data/labels.md Regulatory basis). Escalates to the major pathway only if the underlying failure is shown to have reached a subject.",
+    "required_capa_elements": [
+      "Root-cause investigation of the equipment or system failure",
+      "Verification that no subject or data was actually affected before closing as technical-only",
+      "An added monitoring checkpoint (e.g. alarm, redundant check) to catch recurrence",
+      "A named responsible party and a completion timeline"
+    ]
+  },
+  "administrative": {
+    "routing_team": "Regulatory Affairs / Site Training",
+    "regulatory_reference": "Root-cause sub-type, not an official FDA/ICH category (see data/labels.md Regulatory basis). Escalates to the major pathway only if the documentation gap changed what a subject was told or could decide.",
+    "required_capa_elements": [
+      "Retraining on the documentation or delegation requirement that was missed",
+      "Verification that no subject-facing information was affected before closing as administrative-only",
+      "A named responsible party and a completion timeline"
+    ]
+  },
+  "unreported": {
+    "routing_team": "Quality Assurance / Sponsor Oversight",
+    "regulatory_reference": "Reporting-compliance gap, orthogonal to the FDA importance/intentionality axes (see data/labels.md Regulatory basis) -- the underlying event should also be separately triaged into one of the other four categories once identified.",
+    "required_capa_elements": [
+      "Retrospective classification and filing of the originally-missed deviation report",
+      "Investigation into why the reporting workflow failed to flag it",
+      "An added monitoring checkpoint in the reporting workflow itself",
+      "A named responsible party and a completion timeline"
+    ]
+  }
+}

@@ -6,3 +6,7 @@ scikit-learn
 accelerate
 sentencepiece
 protobuf
+fastapi
+uvicorn
+pydantic
+langgraph

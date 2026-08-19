@@ -37,5 +37,8 @@ Desktop.ini
 models/*
 !models/.gitkeep
 
+# Runtime triage state (SQLite)
+*.db
+
 # Personal Claude Code instructions - not shared
 CLAUDE.local.md
