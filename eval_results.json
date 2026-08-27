@@ -1,0 +1,1038 @@
+[
+  {
+    "case_id": "EVAL-001",
+    "expected_category": "major",
+    "predicted_category": "major",
+    "correct": true,
+    "is_boundary_case": false,
+    "confidence": 0.6242963075637817,
+    "elapsed_seconds": 19.838290214538574,
+    "status": "queued",
+    "rubric": {
+      "summary_substantive": true,
+      "root_cause_substantive": true,
+      "capa_actions_sufficient": true,
+      "capa_actions_tailored": true,
+      "expedited_flag_correct": true,
+      "ownership_fields_present": true,
+      "_score": 1.0
+    },
+    "memo": {
+      "summary": "Subject 101-9001 was administered a double dose of Study Drug XJ-401 at Visit 3 (Week 8), a deviation from the protocol-specified dosing regimen. This is classified as a major/important protocol deviation involving direct subject exposure to an unintended dose, warranting expedited safety review and reporting.",
+      "root_cause_narrative": "The deviation indicates a failure in the site's dosing verification process at Visit 3, resulting in the subject receiving twice the protocol-specified dose of XJ-401. The specific breakdown (e.g., dispensing error, lack of independent dose confirmation, or miscommunication between dispensing and administering staff) is not detailed in the report and should be confirmed through site-level root cause investigation.",
+      "regulatory_citation": "Important protocol deviation under FDA's December 2024 draft guidance (Protocol Deviations for Clinical Investigations of Drugs, Biological Products, and Devices); deviation classified per ICH E3(R1). Requires expedited IRB/sponsor reporting.",
+      "recommended_capa_actions": [
+        "Conduct immediate clinical and safety assessment of Subject 101-9001, including monitoring for adverse effects related to the double dose of XJ-401, and document outcome in the subject's file",
+        "Retrain site staff involved in dispensing and administering XJ-401 on the Visit 3 dosing procedure, with emphasis on dose-verification steps prior to administration",
+        "Implement a mandatory second-person independent verification checkpoint for dose preparation and administration at all visits going forward, to be documented on the drug accountability log",
+        "Review site's current drug dispensing log and accountability records for Subject 101-9001 and other subjects dosed in the same period to rule out similar undetected errors",
+        "Submit expedited deviation report to IRB and sponsor per required timelines, including the subject safety assessment findings"
+      ],
+      "requires_expedited_reporting": true,
+      "responsible_party": "Site Principal Investigator, in coordination with Study Coordinator and Sponsor's Safety/Regulatory Affairs team",
+      "target_resolution_date": "Within 15 calendar days of deviation identification, with expedited safety reporting to IRB/sponsor within 24-72 hours per protocol/regulatory requirements"
+    }
+  },
+  {
+    "case_id": "EVAL-002",
+    "expected_category": "major",
+    "predicted_category": "major",
+    "correct": true,
+    "is_boundary_case": false,
+    "confidence": 0.721589207649231,
+    "elapsed_seconds": 9.08585524559021,
+    "status": "queued",
+    "rubric": {
+      "summary_substantive": true,
+      "root_cause_substantive": true,
+      "capa_actions_sufficient": true,
+      "capa_actions_tailored": true,
+      "expedited_flag_correct": true,
+      "ownership_fields_present": true,
+      "_score": 1.0
+    },
+    "memo": {
+      "summary": "Subject 102-9002 was enrolled into the trial despite failing to meet eligibility criteria due to a renal function value outside the protocol-specified exclusion range. This ineligibility was not detected during the screening review process, resulting in enrollment of an ineligible subject and a major protocol deviation.",
+      "root_cause_narrative": "The screening process failed to correctly cross-check the subject's renal function lab result against the protocol's exclusion criterion threshold prior to enrollment. This suggests a gap in the site's eligibility verification procedure, potentially due to inadequate source data review, insufficient checklist rigor, or lack of a secondary independent verification step at the time of enrollment decision.",
+      "regulatory_citation": "Important protocol deviation under FDA's December 2024 draft guidance (Protocol Deviations for Clinical Investigations of Drugs, Biological Products, and Devices); deviation classification per ICH E3(R1). Requires expedited IRB/sponsor reporting.",
+      "recommended_capa_actions": [
+        "Retrain site screening staff and the Principal Investigator specifically on verification of renal function exclusion criteria against protocol-specified lab thresholds prior to enrollment sign-off",
+        "Conduct an immediate clinical reassessment of Subject 102-9002's renal function and overall safety status, and determine in consultation with the medical monitor whether continued participation, dose modification, or discontinuation is warranted",
+        "Implement a mandatory second-person independent verification of all inclusion/exclusion lab-based criteria before an enrollment decision is finalized, documented via a dedicated eligibility sign-off checklist",
+        "Perform a retrospective audit of recently enrolled subjects at this site to confirm no similar renal function eligibility errors occurred",
+        "Report the deviation to the IRB and sponsor per expedited reporting timelines given its classification as an important protocol deviation"
+      ],
+      "requires_expedited_reporting": true,
+      "responsible_party": "Site Principal Investigator, in coordination with the Clinical Research Coordinator and Sponsor Safety/Regulatory Affairs",
+      "target_resolution_date": "Within 15 calendar days of CAPA approval"
+    }
+  },
+  {
+    "case_id": "EVAL-003",
+    "expected_category": "major",
+    "predicted_category": "major",
+    "correct": true,
+    "is_boundary_case": false,
+    "confidence": 0.7286436557769775,
+    "elapsed_seconds": 10.45466685295105,
+    "status": "queued",
+    "rubric": {
+      "summary_substantive": true,
+      "root_cause_substantive": true,
+      "capa_actions_sufficient": true,
+      "capa_actions_tailored": true,
+      "expedited_flag_correct": true,
+      "ownership_fields_present": true,
+      "_score": 1.0
+    },
+    "memo": {
+      "summary": "Subject 103-9003 underwent a protocol-mandated biopsy prior to obtaining written informed consent, constituting a major/important protocol deviation. The procedure occurred before the subject's rights to be informed of study risks and to voluntarily agree to participate were secured, representing a breach of foundational human subjects protection requirements.",
+      "root_cause_narrative": "The site apparently proceeded with a scheduled invasive procedure (biopsy) without first confirming that written informed consent had been executed. This suggests a breakdown in the site's pre-procedure checklist or scheduling workflow, insufficient verification of consent documentation prior to invasive procedures, and/or inadequate staff awareness of the sequencing requirement between consent and protocol-mandated interventions. No further detail on the specific point of failure (e.g., scheduling coordinator vs. treating physician vs. missing sign-off gate) is available in the deviation report.",
+      "regulatory_citation": "Important protocol deviation under FDA's December 2024 draft guidance (Protocol Deviations for Clinical Investigations of Drugs, Biological Products, and Devices); deviation classified per ICH E3(R1). Requires expedited IRB/sponsor reporting.",
+      "recommended_capa_actions": [
+        "Retrain all site staff involved in procedure scheduling and conduct (PI, sub-I, research coordinators) on the mandatory sequence: written informed consent must be fully executed and filed before any protocol-mandated procedure, including biopsies, is initiated",
+        "Conduct a documented reassessment of Subject 103-9003, including retrospective informed consent discussion, confirmation the subject wishes to continue participation, and medical assessment of any impact from the biopsy performed pre-consent",
+        "Implement a mandatory pre-procedure verification checkpoint (e.g., a signed consent-confirmation form or electronic gate in the scheduling system) requiring documented proof of consent before any invasive study procedure can be booked or performed",
+        "Conduct a look-back review of other subjects at this site who underwent protocol-mandated procedures to confirm consent was obtained beforehand in each case",
+        "Report the deviation to the IRB and sponsor per expedited timelines and document corrective actions in the site's deviation log"
+      ],
+      "requires_expedited_reporting": true,
+      "responsible_party": "Site Principal Investigator, in coordination with Sponsor Safety/Regulatory Affairs and Clinical Site Monitor",
+      "target_resolution_date": "Within 15 calendar days of deviation identification, consistent with expedited reporting timelines for important protocol deviations"
+    }
+  },
+  {
+    "case_id": "EVAL-004",
+    "expected_category": "major",
+    "predicted_category": "major",
+    "correct": true,
+    "is_boundary_case": false,
+    "confidence": 0.7048068642616272,
+    "elapsed_seconds": 9.497991800308228,
+    "status": "queued",
+    "rubric": {
+      "summary_substantive": true,
+      "root_cause_substantive": true,
+      "capa_actions_sufficient": true,
+      "capa_actions_tailored": true,
+      "expedited_flag_correct": true,
+      "ownership_fields_present": true,
+      "_score": 1.0
+    },
+    "memo": {
+      "summary": "An important protocol deviation occurred at the site involving Subject 104-9004, whose treatment assignment was inadvertently unblinded to site staff due to a randomization system error. This event compromises study blinding integrity and requires expedited reporting per CAPA guidance for major deviations.",
+      "root_cause_narrative": "A malfunction or misconfiguration in the randomization system resulted in the treatment assignment for Subject 104-9004 being disclosed to site staff. The specific technical or procedural failure point in the randomization system that allowed this exposure has not yet been identified and requires investigation to determine whether it was a system defect, an access control gap, or human error in interacting with the system.",
+      "regulatory_citation": "Important protocol deviation under FDA's December 2024 draft guidance (Protocol Deviations for Clinical Investigations of Drugs, Biological Products, and Devices); deviation classification per ICH E3(R1). Requires expedited IRB/sponsor reporting.",
+      "recommended_capa_actions": [
+        "Conduct a technical investigation of the randomization system to identify the root cause of the unblinding error and confirm whether other subjects' assignments were similarly exposed",
+        "Retrain site staff on the blinding maintenance procedure and proper handling of randomization system outputs, including steps to take if an unblinding event is suspected",
+        "Assess Subject 104-9004 for any impact of unblinding on data integrity, subject safety, and continued study participation, including consultation with the sponsor on whether the subject can remain evaluable or requires discontinuation",
+        "Implement an added system-level or procedural checkpoint (e.g., masked confirmation screen, dual-verification step, or access log review) to detect and prevent recurrence of unblinding before it reaches site staff",
+        "Notify the IRB and sponsor of the unblinding event on an expedited basis in accordance with protocol and regulatory timelines",
+        "Review randomization system logs across all active sites to confirm no additional unblinding events have occurred"
+      ],
+      "requires_expedited_reporting": true,
+      "responsible_party": "Site Principal Investigator in coordination with Sponsor's Safety/Regulatory Affairs and IT/Randomization System vendor",
+      "target_resolution_date": "Within 15 calendar days of deviation identification, with expedited IRB/sponsor notification completed within 5 business days"
+    }
+  },
+  {
+    "case_id": "EVAL-005",
+    "expected_category": "major",
+    "predicted_category": "major",
+    "correct": true,
+    "is_boundary_case": true,
+    "confidence": 0.3997652530670166,
+    "elapsed_seconds": 9.674585103988647,
+    "status": "queued",
+    "rubric": {
+      "summary_substantive": true,
+      "root_cause_substantive": true,
+      "capa_actions_sufficient": true,
+      "capa_actions_tailored": true,
+      "expedited_flag_correct": true,
+      "ownership_fields_present": true,
+      "_score": 1.0
+    },
+    "memo": {
+      "summary": "A freezer temperature excursion at Site 105 went undetected prior to dispensing, resulting in Subject 105-9005 being dosed with out-of-spec drug product and experiencing an adverse reaction consistent with the dosing error. This is classified as a major/important protocol deviation with a direct subject safety impact.",
+      "root_cause_narrative": "The site's storage monitoring and release process failed to detect and act on a temperature excursion before the affected product was dispensed. This indicates a breakdown in the temperature monitoring/alert workflow and/or the pre-dispensing product qualification check, allowing out-of-spec drug product to reach a subject and cause an adverse reaction.",
+      "regulatory_citation": "Important protocol deviation under FDA's December 2024 draft guidance (Protocol Deviations for Clinical Investigations of Drugs, Biological Products, and Devices); deviation classification per ICH E3(R1). Requires expedited IRB/sponsor reporting.",
+      "recommended_capa_actions": [
+        "Retrain Site 105 pharmacy/dispensing staff on the freezer temperature monitoring protocol and the requirement to verify in-range storage conditions prior to any product release/dispensing",
+        "Arrange clinical reassessment and safety follow-up of Subject 105-9005, including documentation of the adverse reaction, causality assessment, and any needed medical intervention",
+        "Implement an added mandatory checkpoint (e.g., a documented temperature-log sign-off or electronic hold/alert tied to the dispensing system) that blocks dispensing of any product until excursion status is confirmed resolved",
+        "Review and, if needed, recalibrate or upgrade the freezer's continuous temperature monitoring/alarm system to ensure real-time excursion notification to site staff",
+        "Conduct expedited IRB and sponsor notification per protocol deviation reporting timelines, including root cause and corrective action summary"
+      ],
+      "requires_expedited_reporting": true,
+      "responsible_party": "Site 105 Principal Investigator, in coordination with Site Pharmacy/Study Coordinator and Sponsor Safety/Regulatory Affairs",
+      "target_resolution_date": "Within 15 calendar days from report date, pending human confirmation"
+    }
+  },
+  {
+    "case_id": "EVAL-006",
+    "expected_category": "major",
+    "predicted_category": "administrative",
+    "correct": false,
+    "is_boundary_case": true,
+    "confidence": 0.7789673805236816,
+    "elapsed_seconds": 11.427319765090942,
+    "status": "queued",
+    "rubric": {
+      "summary_substantive": true,
+      "root_cause_substantive": true,
+      "capa_actions_sufficient": true,
+      "capa_actions_tailored": true,
+      "expedited_flag_correct": true,
+      "ownership_fields_present": true,
+      "_score": 1.0
+    },
+    "memo": {
+      "summary": "Site 106 obtained informed consent from Subject 106-9006 using an outdated ICF version (v2.1) rather than the IRB-approved v4.0. Verification confirms that v4.0 contained a new safety warning regarding a significant drug interaction that was not communicated to the subject prior to dosing. Because this omission affected subject-facing safety information, the deviation escalates beyond a purely administrative issue and requires reconsent and safety follow-up.",
+      "root_cause_narrative": "The site coordinator dosed the subject using an obsolete consent form version, indicating a breakdown in version control and site awareness of the most recent IRB-approved ICF. This is not a simple documentation lapse: the outdated form omitted a newly added drug-interaction warning, meaning the subject began dosing without being informed of a material safety risk relevant to their decision to participate. This changes the deviation from administrative-only to one impacting subject rights and safety-relevant disclosure.",
+      "regulatory_citation": "Root-cause sub-type (administrative/documentation deviation); escalated to major pathway because the outdated consent version omitted new subject-relevant safety information, per CAPA guidance for this category (data/labels.md Regulatory basis).",
+      "recommended_capa_actions": [
+        "Immediately reconsent Subject 106-9006 using current ICF v4.0, ensuring the drug-interaction warning is explicitly reviewed and documented as discussed with the subject.",
+        "Assess whether the subject experienced any signs/symptoms related to the drug interaction since dosing began, and report findings to the medical monitor.",
+        "Conduct a site-wide inventory of all active subjects at Site 106 to confirm no other subjects were consented using outdated ICF versions.",
+        "Retrain site coordinator(s) and investigator on the site's consent version control procedure, including verification of current IRB-approved version before each consent visit.",
+        "Implement a document control check (e.g., version stamp verification log) at the site to prevent use of outdated consent forms going forward.",
+        "Document verification that no other subject-facing information (beyond the identified warning) was affected by use of v2.1."
+      ],
+      "requires_expedited_reporting": true,
+      "responsible_party": "Site 106 Principal Investigator, in coordination with Site Regulatory Coordinator and Sponsor Regulatory Affairs / Site Training team",
+      "target_resolution_date": "Within 10 business days of report date, with reconsent and safety assessment completed within 5 business days"
+    }
+  },
+  {
+    "case_id": "EVAL-007",
+    "expected_category": "minor",
+    "predicted_category": "minor",
+    "correct": true,
+    "is_boundary_case": false,
+    "confidence": 0.7748217582702637,
+    "elapsed_seconds": 9.542113780975342,
+    "status": "queued",
+    "rubric": {
+      "summary_substantive": true,
+      "root_cause_substantive": true,
+      "capa_actions_sufficient": true,
+      "capa_actions_tailored": true,
+      "expedited_flag_correct": true,
+      "ownership_fields_present": true,
+      "_score": 1.0
+    },
+    "memo": {
+      "summary": "Subject 107-9007's Visit 3 (Week 8) assessment occurred 4 days outside the protocol-defined visit window. No safety assessments were affected by the timing deviation. This is classified as a minor, not-important protocol deviation.",
+      "root_cause_narrative": "The visit was scheduled outside the allowable window, indicating a lapse in site-level visit scheduling and tracking procedures. The deviation appears isolated to a single subject/visit and did not involve any safety-critical procedure, suggesting a scheduling/logistics oversight rather than a systemic protocol compliance failure.",
+      "regulatory_citation": "Not-important protocol deviation under FDA's December 2024 draft guidance; no expedited reporting requirement, but logging and trending are required.",
+      "recommended_capa_actions": [
+        "Document the 4-day visit window deviation and the no-safety-impact rationale in Subject 107-9007's site file and deviation log",
+        "Review the site's visit scheduling and reminder process (e.g., calendar alerts, subject contact protocols) to identify why the Week 8 window was missed",
+        "Query the site's deviation log for the prior 6-12 months to confirm no recurring pattern of visit window deviations for this or other subjects",
+        "Reinforce visit window requirements with site coordinators via a brief refresher communication or note-to-file",
+        "Assign a named individual to close out the log entry and confirm documentation completeness"
+      ],
+      "requires_expedited_reporting": false,
+      "responsible_party": "Site Clinical Research Coordinator, with oversight by Site Quality/Clinical Operations",
+      "target_resolution_date": "Within 30 days of deviation identification"
+    }
+  },
+  {
+    "case_id": "EVAL-008",
+    "expected_category": "minor",
+    "predicted_category": "minor",
+    "correct": true,
+    "is_boundary_case": false,
+    "confidence": 0.782843291759491,
+    "elapsed_seconds": 9.55697250366211,
+    "status": "queued",
+    "rubric": {
+      "summary_substantive": true,
+      "root_cause_substantive": true,
+      "capa_actions_sufficient": true,
+      "capa_actions_tailored": true,
+      "expedited_flag_correct": true,
+      "ownership_fields_present": true,
+      "_score": 1.0
+    },
+    "memo": {
+      "summary": "Subject 108-9008 failed to complete the non-critical symptom diary at Visit 4 (Week 12). The omission is classified as a minor/not-important protocol deviation with no impact on primary endpoints and does not affect subject safety or data integrity for key study outcomes.",
+      "root_cause_narrative": "The deviation appears attributable to a missed administration or collection step for a non-critical study instrument (symptom diary) at the Visit 4 timepoint. No information is provided regarding whether this was due to site staff oversight, subject non-compliance, or scheduling issues; further root cause detail should be obtained from the site prior to final CAPA closure.",
+      "regulatory_citation": "Not-important protocol deviation under FDA's December 2024 draft guidance; no expedited reporting requirement, but the deviation should be logged and trended per site quality procedures.",
+      "recommended_capa_actions": [
+        "Document the deviation, including the specific missed diary entry and no-impact rationale, in the site's deviation/protocol deviation log and site file.",
+        "Confirm with site staff the circumstances surrounding the missed Visit 4 diary completion to inform whether any process reminder is needed for future visits.",
+        "Add this instance to the site-level deviation trending log to monitor for recurrence involving symptom diary completion or other non-critical instruments.",
+        "Verify no further diary entries were missed for this subject in adjacent visit windows.",
+        "Close the log entry once documentation and trending steps are confirmed complete."
+      ],
+      "requires_expedited_reporting": false,
+      "responsible_party": "Site Quality / Clinical Operations - Site Coordinator or designated Clinical Research Associate for the site",
+      "target_resolution_date": "Within 30 days of deviation identification, pending human quality reviewer confirmation"
+    }
+  },
+  {
+    "case_id": "EVAL-009",
+    "expected_category": "minor",
+    "predicted_category": "minor",
+    "correct": true,
+    "is_boundary_case": false,
+    "confidence": 0.7944590449333191,
+    "elapsed_seconds": 6.9350502490997314,
+    "status": "queued",
+    "rubric": {
+      "summary_substantive": true,
+      "root_cause_substantive": true,
+      "capa_actions_sufficient": true,
+      "capa_actions_tailored": true,
+      "expedited_flag_correct": true,
+      "ownership_fields_present": true,
+      "_score": 1.0
+    },
+    "memo": {
+      "summary": "Subject 109-9009 self-administered a scheduled dose of Study Drug RN-88 approximately 2 hours late. No corrective action was taken at the time of the event. This is classified as a minor/not-important protocol deviation with no anticipated impact on subject safety or data integrity given the limited timing window.",
+      "root_cause_narrative": "The deviation appears to stem from a lapse in subject adherence to the prescribed dosing schedule, with no site-level intervention documented at the time. The report does not specify whether this was due to subject forgetfulness, scheduling miscommunication, or another cause; root cause should be confirmed directly with the subject/site staff during CAPA closure.",
+      "regulatory_citation": "Not-important protocol deviation under FDA's December 2024 draft guidance; no expedited reporting requirement, but should be logged and trended.",
+      "recommended_capa_actions": [
+        "Document the 2-hour dosing delay for Subject 109-9009 in the site deviation log, including a no-impact rationale based on the drug's dosing window tolerance (if defined in protocol)",
+        "Re-confirm dosing time expectations with Subject 109-9009 and reinforce dosing schedule adherence at the next study visit",
+        "Add this event to the site-level deviation trending log to monitor for recurrence with this subject or other subjects at the site",
+        "Assign a named site quality/clinical staff member to verify log entry completeness and close out the deviation record"
+      ],
+      "requires_expedited_reporting": false,
+      "responsible_party": "Site Principal Investigator or designated Site Quality/Clinical Research Coordinator",
+      "target_resolution_date": "Within 15 business days of report generation"
+    }
+  },
+  {
+    "case_id": "EVAL-010",
+    "expected_category": "minor",
+    "predicted_category": "minor",
+    "correct": true,
+    "is_boundary_case": false,
+    "confidence": 0.762437641620636,
+    "elapsed_seconds": 10.490472316741943,
+    "status": "queued",
+    "rubric": {
+      "summary_substantive": true,
+      "root_cause_substantive": true,
+      "capa_actions_sufficient": true,
+      "capa_actions_tailored": true,
+      "expedited_flag_correct": true,
+      "ownership_fields_present": true,
+      "_score": 1.0
+    },
+    "memo": {
+      "summary": "At Visit 2 (Week 4), Subject 110-9010's vital signs were captured using a backup manual blood pressure cuff instead of the automated device, in accordance with site backup procedure. This is a minor, no-impact protocol deviation with no safety or data integrity concern requiring escalation.",
+      "root_cause_narrative": "The automated vital signs device was apparently unavailable or non-functional at the time of Subject 110-9010's Visit 2 assessment, prompting site staff to follow the approved backup procedure of using a manual cuff. The deviation reflects appropriate contingency use rather than a procedural failure, but the underlying reason for automated device unavailability (e.g., equipment malfunction, battery failure, scheduling conflict) has not been documented and should be captured to support trending.",
+      "regulatory_citation": "Not-important protocol deviation under FDA's December 2024 draft guidance; no expedited reporting requirement, but should still be logged and trended.",
+      "recommended_capa_actions": [
+        "Document in the site file the specific reason the automated device was unavailable at Visit 2 for Subject 110-9010, and confirm the manual cuff reading was obtained per the site's approved backup vital signs procedure",
+        "Verify and document that the manual cuff used was calibrated and within its calibration due date at the time of use",
+        "Log the deviation with a no-impact rationale in the site deviation log, referencing the subject ID, visit, and device substitution",
+        "Assign a named site staff member to close out the log entry within the site's standard deviation timeline",
+        "Review site equipment logs over the past 3-6 months to determine whether automated device unavailability has occurred for other subjects/visits, to confirm this remains an isolated incident rather than a recurring equipment or maintenance issue",
+        "If a pattern of automated device unavailability is identified, initiate a separate action to address device maintenance, backup stock, or staff scheduling around device availability"
+      ],
+      "requires_expedited_reporting": false,
+      "responsible_party": "Site Principal Investigator or designated Clinical Research Coordinator at the site",
+      "target_resolution_date": "Within 30 days of deviation identification"
+    }
+  },
+  {
+    "case_id": "EVAL-011",
+    "expected_category": "minor",
+    "predicted_category": "minor",
+    "correct": true,
+    "is_boundary_case": true,
+    "confidence": 0.7896432876586914,
+    "elapsed_seconds": 8.489840745925903,
+    "status": "queued",
+    "rubric": {
+      "summary_substantive": true,
+      "root_cause_substantive": true,
+      "capa_actions_sufficient": true,
+      "capa_actions_tailored": true,
+      "expedited_flag_correct": true,
+      "ownership_fields_present": true,
+      "_score": 1.0
+    },
+    "memo": {
+      "summary": "Minor protocol deviation for Subject 111-9011: an exploratory, non-primary biomarker sample was collected 3 days outside the specified visit window. No primary or safety endpoint data were affected.",
+      "root_cause_narrative": "The deviation appears to stem from a scheduling/logistics lapse at the site level that resulted in the exploratory biomarker sample being drawn outside the protocol-specified collection window. Because the affected assessment is exploratory and non-primary, there is no indication of impact to subject safety or to primary/safety endpoint integrity. The exact scheduling breakdown (e.g., subject availability, site calendar tracking, or lab coordination) is not detailed in the deviation report and should be confirmed by the site.",
+      "regulatory_citation": "Not-important protocol deviation under FDA's December 2024 draft guidance; no expedited reporting requirement, but should still be logged and trended.",
+      "recommended_capa_actions": [
+        "Document the deviation, including the 3-day window excursion and the no-impact rationale (exploratory/non-primary endpoint, no safety or primary data affected), in the site's deviation log and subject file for 111-9011.",
+        "Assign a named site staff member to close out the log entry, confirming documentation completeness.",
+        "Review site visit scheduling practices for exploratory sample collections to identify any process gap contributing to the missed window (e.g., calendar reminders, subject visit tracking tools).",
+        "Add this deviation to the site-level deviation trending log to monitor for recurrence of biomarker sample timing issues, with review at the next scheduled site quality/trending meeting.",
+        "Confirm with the site coordinator whether corrective scheduling reminders or checklist updates are needed to prevent recurrence for future exploratory sample collections."
+      ],
+      "requires_expedited_reporting": false,
+      "responsible_party": "Site Clinical Research Coordinator / Site Quality Lead",
+      "target_resolution_date": "Within 30 days of deviation identification"
+    }
+  },
+  {
+    "case_id": "EVAL-012",
+    "expected_category": "minor",
+    "predicted_category": "minor",
+    "correct": true,
+    "is_boundary_case": true,
+    "confidence": 0.7661294937133789,
+    "elapsed_seconds": 7.316678524017334,
+    "status": "queued",
+    "rubric": {
+      "summary_substantive": true,
+      "root_cause_substantive": true,
+      "capa_actions_sufficient": true,
+      "capa_actions_tailored": true,
+      "expedited_flag_correct": true,
+      "ownership_fields_present": true,
+      "_score": 1.0
+    },
+    "memo": {
+      "summary": "Subject 112-9012 received verbal dietary instructions instead of the required written instructions prior to a Screening Visit. The deviation is classified as minor, with no impact on the validity of screening assessments.",
+      "root_cause_narrative": "Site staff provided dietary preparation guidance verbally rather than distributing the written instruction sheet specified by the protocol prior to the Screening Visit. This appears to be an isolated process lapse in visit preparation checklist adherence rather than a systemic issue, though no explicit root cause investigation details were provided beyond the deviation description.",
+      "regulatory_citation": "Not-important protocol deviation under FDA's December 2024 draft guidance; no expedited reporting requirement, but should still be logged and trended.",
+      "recommended_capa_actions": [
+        "Document the deviation, including the verbal-vs-written instruction gap and the no-impact rationale, in the site's protocol deviation log and study file",
+        "Reissue written dietary instructions to Subject 112-9012 retrospectively for the site record, if not already provided",
+        "Reinforce with site coordinators the requirement to provide written (not verbal) dietary instructions ahead of Screening Visits, via a brief retraining or reminder at next site staff meeting",
+        "Add this deviation to the site-level deviation trending log to monitor whether verbal-instead-of-written instruction lapses recur at this site or across other visits/subjects",
+        "Close out the log entry once documentation and trending steps are confirmed complete"
+      ],
+      "requires_expedited_reporting": false,
+      "responsible_party": "Site Principal Investigator or delegated Site Quality/Clinical Research Coordinator",
+      "target_resolution_date": "Within 30 days of deviation identification"
+    }
+  },
+  {
+    "case_id": "EVAL-013",
+    "expected_category": "technical",
+    "predicted_category": "technical",
+    "correct": true,
+    "is_boundary_case": false,
+    "confidence": 0.878143310546875,
+    "elapsed_seconds": 11.501548051834106,
+    "status": "queued",
+    "rubric": {
+      "summary_substantive": true,
+      "root_cause_substantive": true,
+      "capa_actions_sufficient": true,
+      "capa_actions_tailored": true,
+      "expedited_flag_correct": false,
+      "ownership_fields_present": true,
+      "_score": 0.8333333333333334
+    },
+    "memo": {
+      "summary": "An IVRS system outage at Site 113 led to Subject 113-9013 being dispensed an incorrect study kit assignment. Because a subject was directly affected by the system failure, this deviation escalates beyond a technical-only classification and requires assessment of potential impact to subject safety and study blinding/data integrity.",
+      "root_cause_narrative": "The root cause is identified as an outage of the Interactive Voice/Web Response System (IVRS) at Site 113. During the outage, site staff appear to have proceeded with kit dispensation without a validated backup verification process, resulting in the assignment of an incorrect study kit to Subject 113-9013. The specific technical cause of the outage (e.g., server failure, network loss, vendor issue) and the reason site staff lacked a fallback dispensing procedure have not yet been detailed and require further investigation.",
+      "regulatory_citation": "Root-cause sub-type (technical/system failure) per internal CAPA guidance; not an official FDA/ICH deviation category. Because the failure reached a subject (incorrect kit dispensed), this escalates to the major deviation pathway pending confirmation of impact on subject safety, blinding, or data integrity (see ICH E6(R2) Section 5.20 on noncompliance handling).",
+      "recommended_capa_actions": [
+        "Conduct a root-cause investigation with the IVRS vendor/IT to determine the technical cause of the outage at Site 113 (e.g., server, connectivity, or software failure) and its duration.",
+        "Perform an impact assessment on Subject 113-9013 to determine clinical/safety consequences of receiving the incorrect kit, including review of kit contents, treatment arm implications, and any need for medical monitor notification or unblinding assessment.",
+        "Review site dispensation logs and IVRS outage timestamps to confirm whether any other subjects were dispensed kits during the outage window.",
+        "Implement an automated system alert/checkpoint that flags or blocks kit dispensation attempts when IVRS is unavailable, requiring manual confirmation from the medical monitor or study drug manager before proceeding.",
+        "Establish and document a formal backup dispensation SOP for site staff to follow during IVRS downtime, including a verification callback step with the sponsor/CRO drug supply team.",
+        "Retrain Site 113 staff on the revised IVRS outage/backup dispensation procedure and document training completion."
+      ],
+      "requires_expedited_reporting": true,
+      "responsible_party": "Sponsor IT/IVRS Systems Lead in coordination with Site 113 Principal Investigator and Clinical Trial Manager",
+      "target_resolution_date": "30 calendar days from report date, pending confirmation by Quality reviewer"
+    }
+  },
+  {
+    "case_id": "EVAL-014",
+    "expected_category": "technical",
+    "predicted_category": "technical",
+    "correct": true,
+    "is_boundary_case": false,
+    "confidence": 0.8632712364196777,
+    "elapsed_seconds": 12.004975318908691,
+    "status": "queued",
+    "rubric": {
+      "summary_substantive": true,
+      "root_cause_substantive": true,
+      "capa_actions_sufficient": true,
+      "capa_actions_tailored": true,
+      "expedited_flag_correct": true,
+      "ownership_fields_present": true,
+      "_score": 1.0
+    },
+    "memo": {
+      "summary": "Subject 114-9014 experienced a malfunction of the ePRO device at Visit 3 (Week 8), resulting in the loss of that visit's patient-reported outcome (PRO) data. This is classified as a technical deviation pending confirmation that no broader subject impact occurred.",
+      "root_cause_narrative": "The deviation report indicates a device-level malfunction of the ePRO unit assigned to Subject 114-9014 during the Week 8 visit, which prevented capture or transmission of PRO data for that timepoint. No further detail is provided on the specific failure mode (e.g., software crash, battery/power failure, connectivity loss, or data sync error), and the root cause has not yet been determined. Because the deviation has already resulted in confirmed data loss for one subject/visit, this cannot be closed as a purely technical, no-impact event without further verification that no other visits, subjects, or data points were similarly affected by the same device or system issue.",
+      "regulatory_citation": "Root-cause sub-type (technical/equipment failure) - not an official FDA/ICH deviation category; per internal CAPA guidance, this may escalate to the major deviation pathway if the underlying failure is shown to have reached additional subjects or data.",
+      "recommended_capa_actions": [
+        "Conduct a technical root-cause investigation of the specific ePRO device used by Subject 114-9014, including review of device logs, error codes, battery/connectivity status, and software version at time of failure",
+        "Determine whether the malfunction was isolated to this single device/unit or reflects a broader systemic issue affecting other ePRO devices or subjects in the trial",
+        "Query the ePRO vendor/system database to confirm whether any partial or cached PRO data for Visit 3 exists and can be recovered before concluding the data is permanently lost",
+        "Assess and document the impact of the missing Week 8 PRO data on the subject's overall dataset and on study endpoints (e.g., whether imputation or a note-to-file is needed)",
+        "Implement an automated alert or daily device-status check (e.g., low battery warning, failed-sync flag) to detect ePRO malfunctions in real time going forward",
+        "Provide site staff with a backup PRO collection procedure (e.g., paper diary) to use immediately if an ePRO device failure is detected during a visit",
+        "Document final determination of whether this deviation remains technical-only or requires escalation to the major deviation pathway based on investigation findings"
+      ],
+      "requires_expedited_reporting": false,
+      "responsible_party": "Site IT/Clinical Systems support lead in coordination with the ePRO vendor's technical support team, with Quality Systems oversight",
+      "target_resolution_date": "Within 30 days of deviation identification, pending vendor investigation timelines"
+    }
+  },
+  {
+    "case_id": "EVAL-015",
+    "expected_category": "technical",
+    "predicted_category": "technical",
+    "correct": true,
+    "is_boundary_case": false,
+    "confidence": 0.8983431458473206,
+    "elapsed_seconds": 12.601370573043823,
+    "status": "queued",
+    "rubric": {
+      "summary_substantive": true,
+      "root_cause_substantive": true,
+      "capa_actions_sufficient": true,
+      "capa_actions_tailored": true,
+      "expedited_flag_correct": true,
+      "ownership_fields_present": true,
+      "_score": 1.0
+    },
+    "memo": {
+      "summary": "A routine equipment maintenance audit at Site 115 discovered that lab equipment used for sample analysis was operated past its scheduled calibration due date. The deviation was identified proactively via audit rather than through a data quality failure, but requires verification that no analytical results were compromised during the lapsed period.",
+      "root_cause_narrative": "Preliminary information indicates the calibration schedule for this lab equipment was not tracked or triggered appropriately, allowing the service due date to pass without action. The root cause appears to be a gap in the site's equipment calibration tracking/reminder process (e.g., lack of automated alert, missed manual log review, or unclear ownership of calibration scheduling) rather than an isolated one-off error, since the lapse persisted long enough to be caught only by a separate routine audit rather than by the calibration process itself. A full investigation is needed to confirm whether this was a tracking system failure, staff turnover/handoff gap, or resourcing issue at Site 115.",
+      "regulatory_citation": "Root-cause sub-type (technical/equipment failure) \u2014 not an official FDA/ICH category; per internal guidance this escalates to the major deviation pathway only if the calibration lapse is shown to have produced sample results that reached a subject (e.g., informed clinical or dosing decisions based on inaccurate lab data).",
+      "recommended_capa_actions": [
+        "Conduct a root-cause investigation into why the calibration due date was missed, including review of Site 115's calibration tracking log/system and staff responsibilities for equipment maintenance scheduling",
+        "Identify all samples analyzed on the affected equipment since its last valid calibration and assess/document whether results were within expected tolerance versus a freshly calibrated reference or backup instrument",
+        "Immediately recalibrate or requalify the equipment before it is returned to use for subject sample analysis",
+        "Determine, in consultation with the study's medical/data monitor, whether any affected results were used in subject management or eligibility decisions, and document findings to support closing as technical-only (or trigger escalation if subject impact is confirmed)",
+        "Implement an automated calibration due-date alert (e.g., calendar/system flag 30 and 7 days prior) and add a redundant secondary check (e.g., monthly equipment status log review by a second staff member) to catch future lapses",
+        "Retrain Site 115 lab/facilities staff on calibration scheduling responsibilities and documentation requirements"
+      ],
+      "requires_expedited_reporting": false,
+      "responsible_party": "Site 115 Lab/Facilities Manager, in coordination with the sponsor's Quality Systems team",
+      "target_resolution_date": "30 days from report date, pending confirmation of no subject impact; escalate timeline if impact assessment reveals affected subject data"
+    }
+  },
+  {
+    "case_id": "EVAL-016",
+    "expected_category": "technical",
+    "predicted_category": "technical",
+    "correct": true,
+    "is_boundary_case": false,
+    "confidence": 0.8833357095718384,
+    "elapsed_seconds": 10.983484745025635,
+    "status": "queued",
+    "rubric": {
+      "summary_substantive": true,
+      "root_cause_substantive": true,
+      "capa_actions_sufficient": true,
+      "capa_actions_tailored": true,
+      "expedited_flag_correct": true,
+      "ownership_fields_present": true,
+      "_score": 1.0
+    },
+    "memo": {
+      "summary": "An EDC system outage at Site 116 prevented data entry for Subject 116-9016's visit within the protocol-specified time window. This is classified as a technical deviation, but verification is required to confirm no subject safety or data integrity impact occurred as a result of the delayed entry.",
+      "root_cause_narrative": "The deviation was caused by an outage of the Electronic Data Capture (EDC) system at Site 116, which rendered the platform unavailable for timely entry of Subject 116-9016's visit data. The specific technical cause of the outage (e.g., server failure, network connectivity loss, vendor-side maintenance issue, or licensing lapse) has not yet been identified in the report and requires root-cause investigation. The deviation appears to be an isolated system availability issue rather than a subject-specific or investigator error.",
+      "regulatory_citation": "Root-cause sub-type (technical/system failure) - not an official FDA/ICH category. Per CAPA guidance, this remains a technical-only classification unless investigation shows the underlying system failure reached and affected the subject (e.g., loss of safety data, missed dosing/visit assessment), in which case it escalates to the major deviation pathway.",
+      "recommended_capa_actions": [
+        "Conduct a root-cause investigation with the EDC vendor/IT team to determine the specific cause of the outage at Site 116 (e.g., server, network, or vendor-side failure) and its duration.",
+        "Confirm the exact timestamp of the outage and compare against Subject 116-9016's visit window to quantify the length and impact of the data entry delay.",
+        "Verify with the site that all source data for the affected visit was captured on paper/backup at the time of the visit and that no clinical assessments, safety data, or subject well-being were compromised by the EDC unavailability.",
+        "Once EDC access was restored, confirm entry of Subject 116-9016's visit data was completed and reconcile timestamps against source documents.",
+        "Implement an automated EDC uptime monitoring/alert system (e.g., outage notification to site coordinators and IT support) to enable faster detection and site awareness during future outages.",
+        "Establish a documented backup/downtime data-capture procedure (e.g., paper CRF fallback) for sites to use during EDC unavailability, with retraining for Site 116 staff.",
+        "Notify other sites of the outage event and confirm no other subjects across the trial were similarly affected during the same outage window."
+      ],
+      "requires_expedited_reporting": false,
+      "responsible_party": "Sponsor IT/EDC Systems Manager in coordination with Site 116 Clinical Research Coordinator and Quality Systems lead",
+      "target_resolution_date": "30 days from report date"
+    }
+  },
+  {
+    "case_id": "EVAL-017",
+    "expected_category": "technical",
+    "predicted_category": "technical",
+    "correct": true,
+    "is_boundary_case": true,
+    "confidence": 0.8375018835067749,
+    "elapsed_seconds": 10.569738626480103,
+    "status": "queued",
+    "rubric": {
+      "summary_substantive": true,
+      "root_cause_substantive": true,
+      "capa_actions_sufficient": true,
+      "capa_actions_tailored": true,
+      "expedited_flag_correct": true,
+      "ownership_fields_present": true,
+      "_score": 1.0
+    },
+    "memo": {
+      "summary": "A temperature excursion occurred in the storage freezer at Site 117. The automated alarm system detected the excursion before any dose was dispensed; affected stock was immediately quarantined and no subject received out-of-spec product.",
+      "root_cause_narrative": "The deviation stems from an equipment/system-level failure (freezer temperature control) at Site 117. The automated alarm functioned as designed and triggered timely quarantine of affected stock, preventing dispensation of compromised product to any subject. As reported, this appears to be a technical/equipment excursion with no evidence of subject or data impact; however, the underlying cause of the temperature excursion itself (e.g., equipment malfunction, power interruption, door seal failure, calibration drift) has not yet been identified and requires investigation to confirm it is an isolated, correctable technical event.",
+      "regulatory_citation": "Root-cause sub-type (technical/equipment) \u2014 not an official FDA/ICH deviation category; per CAPA guidance, this remains a technical-only classification unless investigation shows the underlying failure reached a subject, in which case escalation to the major deviation pathway is required.",
+      "recommended_capa_actions": [
+        "Conduct a root-cause investigation of the freezer/storage unit to identify the specific cause of the temperature excursion (e.g., mechanical failure, power loss, door/seal issue, sensor calibration error)",
+        "Confirm and document the quarantine and disposition (destruction or return) of all affected stock, verifying no unit was dispensed or administered",
+        "Review alarm and temperature logs at Site 117 to formally verify no subject exposure or data integrity impact occurred, and document this verification to support closure as technical-only",
+        "Inspect and, if needed, service or replace the freezer unit; verify calibration of temperature sensors and alarm thresholds",
+        "Implement an added monitoring checkpoint, such as a redundant temperature sensor/alarm or increased manual temperature-log check frequency, to catch recurrence",
+        "Confirm site staff followed the temperature excursion SOP correctly and provide refresher training if gaps are identified",
+        "Review whether other sites using similar freezer equipment/alarm configurations require preventive inspection"
+      ],
+      "requires_expedited_reporting": false,
+      "responsible_party": "Site 117 Quality/Facilities Manager, in coordination with IT/Facilities and Sponsor Quality Systems",
+      "target_resolution_date": "30 calendar days from report date, pending confirmation by quality reviewer"
+    }
+  },
+  {
+    "case_id": "EVAL-018",
+    "expected_category": "technical",
+    "predicted_category": "technical",
+    "correct": true,
+    "is_boundary_case": true,
+    "confidence": 0.8687911033630371,
+    "elapsed_seconds": 9.78855037689209,
+    "status": "queued",
+    "rubric": {
+      "summary_substantive": true,
+      "root_cause_substantive": true,
+      "capa_actions_sufficient": true,
+      "capa_actions_tailored": true,
+      "expedited_flag_correct": true,
+      "ownership_fields_present": true,
+      "_score": 1.0
+    },
+    "memo": {
+      "summary": "A software update applied to the randomization system at Site 118 introduced a mismatch in the kit-assignment list. The error was identified during routine reconciliation prior to dosing of any subject, so no subject exposure or data integrity impact occurred.",
+      "root_cause_narrative": "A software update was deployed to the randomization/kit-assignment system without adequate post-update validation or reconciliation checks, resulting in a mismatch between the system-generated kit-assignment list and the correct assignment sequence. The mismatch was caught during a routine, pre-dosing reconciliation step, indicating that existing manual review processes functioned as a backstop but that automated safeguards to catch such mismatches immediately after system changes were insufficient.",
+      "regulatory_citation": "Root-cause sub-type (technical/system failure) - not an official FDA/ICH category; would escalate to major deviation pathway only if evidence showed a subject was dosed from the mismatched list, which is not the case here.",
+      "recommended_capa_actions": [
+        "Conduct a root-cause investigation into the software update process to determine why the update was deployed without triggering a validation/reconciliation check against the master kit-assignment list",
+        "Perform a full audit of all kit-assignment lists generated since the software update to confirm no other site or subject records were affected",
+        "Document verification that no subject at Site 118 was dosed from the mismatched list and that no other trial data was impacted before closing this as technical-only",
+        "Implement an automated post-update validation check (e.g., checksum or list-comparison alarm) that flags discrepancies between the randomization system output and the reference kit-assignment list immediately after any software deployment",
+        "Require a formal change-control and revalidation procedure for future software updates to the randomization system, including sign-off by Quality Systems before the update is released to production",
+        "Add a redundant independent reconciliation step immediately following any system update, rather than relying solely on routine periodic reconciliation"
+      ],
+      "requires_expedited_reporting": false,
+      "responsible_party": "IT/Quality Systems lead (in coordination with Site 118 study coordinator) for validation of the fix; Clinical Quality Assurance for closure verification",
+      "target_resolution_date": "30 days from report date, pending human confirmation"
+    }
+  },
+  {
+    "case_id": "EVAL-019",
+    "expected_category": "administrative",
+    "predicted_category": "administrative",
+    "correct": true,
+    "is_boundary_case": false,
+    "confidence": 0.9062334299087524,
+    "elapsed_seconds": 8.785442113876343,
+    "status": "queued",
+    "rubric": {
+      "summary_substantive": true,
+      "root_cause_substantive": true,
+      "capa_actions_sufficient": true,
+      "capa_actions_tailored": true,
+      "expedited_flag_correct": true,
+      "ownership_fields_present": true,
+      "_score": 1.0
+    },
+    "memo": {
+      "summary": "At Site 119, Dr. Nguyen performed Visit 2 (Week 4) study procedures for Subject 119-9019 prior to being added to the site's delegation of authority (DoA) log, constituting an administrative documentation deviation.",
+      "root_cause_narrative": "The site's delegation of authority log was not updated to add Dr. Nguyen before she conducted Visit 2 procedures, indicating a breakdown in the site's process for ensuring DoA log updates precede performance of delegated study tasks by new or newly assigned personnel.",
+      "regulatory_citation": "Root-cause sub-type, not an official FDA/ICH category (see data/labels.md Regulatory basis). Escalates to the major pathway only if the documentation gap changed what a subject was told or could decide.",
+      "recommended_capa_actions": [
+        "Retroactively update the Site 119 delegation of authority log to add Dr. Nguyen with an effective date supported by training/qualification records, and document rationale for the late entry.",
+        "Retrain the Site 119 Principal Investigator and study coordinator on the requirement to update the DoA log prior to any staff member performing delegated protocol procedures.",
+        "Review Subject 119-9019's Visit 2 (Week 4) source documents and informed consent status to verify that no subject-facing information, consent process, or clinical decision-making was affected by Dr. Nguyen's undocumented delegation status.",
+        "Conduct a spot-check audit of the Site 119 DoA log against staff activity logs for the preceding 3 months to identify any similar undocumented delegation instances.",
+        "Confirm Dr. Nguyen's qualifications, training, and CV were on file and appropriate for the delegated Visit 2 procedures prior to the DoA update."
+      ],
+      "requires_expedited_reporting": false,
+      "responsible_party": "Site 119 Principal Investigator, in coordination with the Clinical Research Associate/Monitor and Site Training Lead",
+      "target_resolution_date": "2025-01-15"
+    }
+  },
+  {
+    "case_id": "EVAL-020",
+    "expected_category": "administrative",
+    "predicted_category": "administrative",
+    "correct": true,
+    "is_boundary_case": false,
+    "confidence": 0.9000951647758484,
+    "elapsed_seconds": 8.407739877700806,
+    "status": "queued",
+    "rubric": {
+      "summary_substantive": true,
+      "root_cause_substantive": true,
+      "capa_actions_sufficient": true,
+      "capa_actions_tailored": true,
+      "expedited_flag_correct": true,
+      "ownership_fields_present": true,
+      "_score": 1.0
+    },
+    "memo": {
+      "summary": "Site 120 submitted its continuing review application to the IRB of record 12 days after the required deadline, resulting in a lapse in timely IRB oversight documentation. This is classified as an administrative deviation.",
+      "root_cause_narrative": "The delay appears attributable to a lapse in tracking of the IRB continuing review deadline at the site level, indicating a gap in the site's regulatory calendar/tracking process or staff awareness of submission timelines. No information is provided indicating that subject-facing materials, informed consent, or subject decision-making were affected by this delay.",
+      "regulatory_citation": "Root-cause sub-type (administrative/documentation deviation), not an official FDA/ICH category. Would escalate to major pathway only if the delay is found to have changed what a subject was told or could decide; no such indication is present here.",
+      "recommended_capa_actions": [
+        "Retrain site coordinator and PI at Site 120 on IRB continuing review submission timelines and internal tracking procedures for renewal deadlines",
+        "Implement or verify use of a regulatory tracking tool/tickler system at Site 120 with automated reminders at 60/30/14 days prior to IRB continuing review deadlines",
+        "Confirm and document that IRB approval, once granted, did not create a lapse period during which subjects were enrolled, screened, or continued study procedures without active IRB approval",
+        "Verify that no subject-facing documents (informed consent forms, subject communications) were impacted or required re-issuance due to the delayed submission",
+        "Document root cause and corrective action completion in the site regulatory file, with confirmation of closure as administrative-only pending verification"
+      ],
+      "requires_expedited_reporting": false,
+      "responsible_party": "Site 120 Principal Investigator / Study Coordinator, in coordination with Regulatory Affairs",
+      "target_resolution_date": "30 days from CAPA approval"
+    }
+  },
+  {
+    "case_id": "EVAL-021",
+    "expected_category": "administrative",
+    "predicted_category": "administrative",
+    "correct": true,
+    "is_boundary_case": false,
+    "confidence": 0.9157432317733765,
+    "elapsed_seconds": 9.549553632736206,
+    "status": "queued",
+    "rubric": {
+      "summary_substantive": true,
+      "root_cause_substantive": true,
+      "capa_actions_sufficient": true,
+      "capa_actions_tailored": true,
+      "expedited_flag_correct": true,
+      "ownership_fields_present": true,
+      "_score": 1.0
+    },
+    "memo": {
+      "summary": "During routine monitoring review at Site 121, it was identified that the source document for Subject 121-9021's Visit 3 (Week 8) visit lacked the investigator's signature and date, indicating that the record had not been formally reviewed/attested by the investigator at the time of the visit.",
+      "root_cause_narrative": "The deviation appears to stem from an administrative/documentation oversight at the site level, where the investigator did not complete the required sign-and-date step on the Visit 3 source document, likely due to a gap in adherence to the site's documentation completion workflow or a lapse in the investigator's review process before the document was filed. No information is provided to suggest this affected subject safety, consent, or study conduct decisions.",
+      "regulatory_citation": "Root-cause sub-type (administrative documentation gap) - not an official FDA/ICH category. Per guidance, this remains on the administrative pathway unless the missing signature/date is found to have changed what the subject was told or could decide.",
+      "recommended_capa_actions": [
+        "Obtain the investigator's retrospective signature and date on the Visit 3 (Week 8) source document, with a contemporaneous note explaining the delayed completion, per site SOP for late entries.",
+        "Conduct targeted retraining for the investigator and site coordinator at Site 121 on the requirement to sign and date source documents at the time of subject visits, before monitoring review.",
+        "Perform a review of the investigator's other recently completed source documents at Site 121 to confirm this was an isolated instance and not a broader pattern of missed signatures.",
+        "Document verification that the missing signature/date did not affect any subject-facing information, decisions, or the Visit 3 assessment content, to confirm the deviation remains administrative-only.",
+        "Update site monitoring visit checklists to flag unsigned/undated source documents for immediate escalation during future monitoring visits."
+      ],
+      "requires_expedited_reporting": false,
+      "responsible_party": "Site 121 Principal Investigator, in coordination with the Site Clinical Research Coordinator and Sponsor Regulatory Affairs/Site Training lead",
+      "target_resolution_date": "Within 30 days of CAPA approval"
+    }
+  },
+  {
+    "case_id": "EVAL-022",
+    "expected_category": "administrative",
+    "predicted_category": "administrative",
+    "correct": true,
+    "is_boundary_case": false,
+    "confidence": 0.8894701600074768,
+    "elapsed_seconds": 8.990742444992065,
+    "status": "queued",
+    "rubric": {
+      "summary_substantive": true,
+      "root_cause_substantive": true,
+      "capa_actions_sufficient": true,
+      "capa_actions_tailored": true,
+      "expedited_flag_correct": true,
+      "ownership_fields_present": true,
+      "_score": 1.0
+    },
+    "memo": {
+      "summary": "At Site 122, a staff member signed the quality-of-life questionnaire on behalf of Subject 122-9022 without documenting the reason for this exception, constituting an administrative documentation deviation.",
+      "root_cause_narrative": "The deviation appears to stem from a lapse in adherence to documentation/delegation requirements when a staff member completed a subject-reported outcome measure on the subject's behalf. No rationale or justification for this exception was recorded at the time, indicating a gap in site staff understanding or application of proxy-completion documentation procedures for subject-facing instruments.",
+      "regulatory_citation": "Root-cause sub-type, not an official FDA/ICH category (see data/labels.md Regulatory basis). Escalates to the major pathway only if the documentation gap changed what a subject was told or could decide.",
+      "recommended_capa_actions": [
+        "Provide targeted retraining to the responsible staff member and other Site 122 personnel on proper documentation of exceptions when a questionnaire is completed on a subject's behalf, including required rationale and delegation log updates",
+        "Conduct a review of Subject 122-9022's questionnaire response and any related source documents to confirm the quality-of-life data reflects the subject's own input and was not altered or influenced by proxy completion",
+        "Verify whether the subject was informed of, or consented to, having the questionnaire completed on their behalf, to confirm no subject-facing information or decision-making was affected",
+        "Document the outcome of the subject-impact verification in the deviation file to support closing as administrative-only, or escalate if subject-facing information was found to be affected",
+        "Implement or reinforce a site-level checklist requiring documented justification whenever a questionnaire or subject-reported outcome is completed by staff instead of the subject"
+      ],
+      "requires_expedited_reporting": false,
+      "responsible_party": "Site 122 Principal Investigator / Site Coordinator, in coordination with Regulatory Affairs / Site Training",
+      "target_resolution_date": "30 days from CAPA approval"
+    }
+  },
+  {
+    "case_id": "EVAL-023",
+    "expected_category": "administrative",
+    "predicted_category": "administrative",
+    "correct": true,
+    "is_boundary_case": true,
+    "confidence": 0.8897356390953064,
+    "elapsed_seconds": 9.97875452041626,
+    "status": "queued",
+    "rubric": {
+      "summary_substantive": true,
+      "root_cause_substantive": true,
+      "capa_actions_sufficient": true,
+      "capa_actions_tailored": true,
+      "expedited_flag_correct": true,
+      "ownership_fields_present": true,
+      "_score": 1.0
+    },
+    "memo": {
+      "summary": "Site 123 administered ICF version 2.1 to Subject 123-9023 instead of the currently approved version 4.0. Review confirmed the version discrepancy involved only formatting and administrative edits, with no new safety information and no impact on the validity of the subject's consent.",
+      "root_cause_narrative": "The site failed to update its ICF stock/version tracking following IRB approval of v4.0, resulting in the outdated v2.1 form being administered at the time of consent. This reflects a gap in document version control and site staff awareness of the current approved consent form, rather than any deficiency in the consent process itself or subject understanding.",
+      "regulatory_citation": "Root-cause sub-type (administrative documentation deviation), not an official FDA/ICH category; confirmed administrative-only per review that no subject-facing information changed. See data/labels.md Regulatory basis for classification logic.",
+      "recommended_capa_actions": [
+        "Retrain Site 123 coordination staff on ICF version control procedures, including how to verify current approved version prior to each consent encounter",
+        "Conduct a site-level inventory audit to remove all outdated ICF versions (including v2.1) from circulation and confirm only v4.0 stock is available",
+        "Document formal comparison of v2.1 vs v4.0 confirming no safety-relevant or decision-relevant content changes, to support closing as administrative-only",
+        "Re-consent Subject 123-9023 using v4.0 at next visit as a precautionary measure, and document rationale if re-consent is deemed unnecessary",
+        "Implement a version-check log or checklist requiring staff to confirm current ICF version against the sponsor/IRB approval tracker before each consent visit"
+      ],
+      "requires_expedited_reporting": false,
+      "responsible_party": "Site 123 Principal Investigator / Clinical Research Coordinator, in coordination with Sponsor Regulatory Affairs",
+      "target_resolution_date": "30 days from CAPA approval"
+    }
+  },
+  {
+    "case_id": "EVAL-024",
+    "expected_category": "administrative",
+    "predicted_category": "administrative",
+    "correct": true,
+    "is_boundary_case": true,
+    "confidence": 0.8994693160057068,
+    "elapsed_seconds": 8.397811651229858,
+    "status": "queued",
+    "rubric": {
+      "summary_substantive": true,
+      "root_cause_substantive": true,
+      "capa_actions_sufficient": true,
+      "capa_actions_tailored": true,
+      "expedited_flag_correct": true,
+      "ownership_fields_present": true,
+      "_score": 1.0
+    },
+    "memo": {
+      "summary": "A monitoring visit log for Site 124 was not co-signed by the required second reviewer within the specified timeframe. The underlying monitoring visit was conducted correctly and the log content was accurate; the deficiency is limited to the co-signature/documentation timing requirement.",
+      "root_cause_narrative": "The deviation appears to stem from a lapse in adherence to the internal review/co-signature workflow for monitoring visit logs, resulting in the second reviewer's sign-off not being completed within the specified timeframe. No evidence indicates the visit itself was improperly conducted or that log content was inaccurate; this is an administrative/documentation control gap rather than a data integrity or subject-safety issue.",
+      "regulatory_citation": "Root-cause sub-type (administrative documentation/delegation control gap) - not an official FDA/ICH category. Per CAPA guidance, this remains on the administrative pathway unless review confirms the documentation gap affected subject-facing information or decisions.",
+      "recommended_capa_actions": [
+        "Retrain the responsible monitor(s) and second reviewer(s) at Site 124 on the required co-signature timeframe and escalation process for monitoring visit logs",
+        "Confirm and document that the visit log content was accurate and that no subject-facing information, consent materials, or subject decisions were affected by the delayed co-signature",
+        "Obtain the missing co-signature retroactively with a documented explanation of the delay appended to the visit log",
+        "Conduct a spot-check of recent monitoring visit logs across the site (or program) to confirm co-signature timeliness is not a broader trend",
+        "Update the site's or CRA's tracking log/tickler system to flag pending co-signatures before the deadline"
+      ],
+      "requires_expedited_reporting": false,
+      "responsible_party": "Site 124 Clinical Research Associate (CRA) Lead / Regulatory Affairs-Site Training liaison",
+      "target_resolution_date": "Within 30 days of memo issuance (pending confirmation by quality reviewer)"
+    }
+  },
+  {
+    "case_id": "EVAL-025",
+    "expected_category": "unreported",
+    "predicted_category": "unreported",
+    "correct": true,
+    "is_boundary_case": false,
+    "confidence": 0.9560574889183044,
+    "elapsed_seconds": 13.040812969207764,
+    "status": "queued",
+    "rubric": {
+      "summary_substantive": true,
+      "root_cause_substantive": true,
+      "capa_actions_sufficient": true,
+      "capa_actions_tailored": true,
+      "expedited_flag_correct": true,
+      "ownership_fields_present": true,
+      "_score": 1.0
+    },
+    "memo": {
+      "summary": "A protocol deviation involving Subject 125-9025's Visit 2 (Week 4, originally scheduled/occurring 2024-03-15) at Site 125 was identified during routine monitoring as never having been logged or reported through the standard deviation reporting workflow. This is a reporting-compliance gap: the underlying deviation event itself has not yet been characterized or classified, and its nature/severity is currently unknown.",
+      "root_cause_narrative": "The available information indicates only that the deviation was discovered unreported during a routine monitoring visit; no details on the underlying event, its cause, or why the site/CRA failed to log it in the deviation tracking system have been provided. A root cause cannot be fully determined until (1) the original deviation is retrospectively investigated and classified, and (2) the site's and monitor's deviation-reporting workflow is reviewed to identify the specific point of failure (e.g., missed visit review, inadequate site training, absent monitoring checkpoint, or system/documentation gap). This memo flags the reporting failure; a separate root cause analysis of the underlying Visit 2 deviation itself is required once it is retrospectively filed and categorized.",
+      "regulatory_citation": "This is a reporting-compliance gap, orthogonal to the FDA importance/intentionality classification axes. Per CAPA guidance, the underlying deviation event must be separately triaged and classified into one of the four standard deviation categories once identified; this memo addresses only the failure of the reporting workflow itself.",
+      "recommended_capa_actions": [
+        "Immediately retrospectively investigate and document the original Visit 2 (Week 4) deviation for Subject 125-9025, including what occurred, when it was identified by site staff, and its clinical/protocol significance",
+        "Classify the underlying deviation into the appropriate category (per data/labels.md criteria) and file the corresponding deviation report, including any needed IRB/sponsor notification per that category's timeline",
+        "Conduct a root-cause investigation into why Site 125's deviation-reporting workflow (and CRA monitoring review) failed to flag and log this event at the time it occurred",
+        "Review Site 125's deviation log and source documents for the surrounding visit window to confirm no other unreported deviations exist",
+        "Implement an added monitoring checkpoint (e.g., cross-check of visit completion/deviation logs against the EDC and site source documents at each monitoring visit) to catch unreported deviations going forward",
+        "Retrain Site 125 study coordinator(s) on deviation identification and timely reporting requirements",
+        "Document this CAPA and its findings in the trial master file and report closure status to the sponsor's Quality Assurance oversight function"
+      ],
+      "requires_expedited_reporting": false,
+      "responsible_party": "Site 125 Principal Investigator / Study Coordinator, in coordination with the assigned CRA and Sponsor Quality Assurance/Clinical Operations",
+      "target_resolution_date": "2024-04-15 (30 days from discovery during the monitoring visit) -- to be confirmed by QA reviewer based on the actual severity of the underlying deviation once classified"
+    }
+  },
+  {
+    "case_id": "EVAL-026",
+    "expected_category": "unreported",
+    "predicted_category": "unreported",
+    "correct": true,
+    "is_boundary_case": false,
+    "confidence": 0.9573746919631958,
+    "elapsed_seconds": 11.16109323501587,
+    "status": "queued",
+    "rubric": {
+      "summary_substantive": true,
+      "root_cause_substantive": true,
+      "capa_actions_sufficient": true,
+      "capa_actions_tailored": true,
+      "expedited_flag_correct": false,
+      "ownership_fields_present": true,
+      "_score": 0.8333333333333334
+    },
+    "memo": {
+      "summary": "Audit at Site 126 identified an unreported protocol deviation: Subject 126-9026 received an off-protocol dose that was never captured in a deviation report at the time of occurrence. This is a reporting-compliance gap requiring retrospective filing and workflow investigation.",
+      "root_cause_narrative": "The off-protocol dose administered to Subject 126-9026 was not identified or escalated through the site's deviation reporting workflow at the time it occurred, and was only discovered during a subsequent audit. This indicates a breakdown in real-time deviation detection at the site level and/or a failure of monitoring checkpoints to flag the dosing discrepancy before audit, resulting in a delayed and reactive rather than proactive identification of the event.",
+      "regulatory_citation": "Reporting-compliance gap, orthogonal to the FDA importance/intentionality axes (per data/labels.md Regulatory basis); the underlying dosing event must be separately triaged into one of the four primary deviation categories once its nature (e.g., dosing error importance/intentionality) is assessed.",
+      "recommended_capa_actions": [
+        "Retrospectively classify and file the originally-missed deviation report for Subject 126-9026's off-protocol dose, including full details of the dose administered vs. protocol-specified dose",
+        "Conduct a root-cause investigation at Site 126 into why this dosing event was not flagged or escalated through the existing deviation reporting workflow at the time of occurrence",
+        "Review site source documents and dosing logs for Subject 126-9026 and other subjects at Site 126 to identify any additional unreported deviations from the same time period",
+        "Implement an added monitoring checkpoint (e.g., cross-check of dosing records against protocol-specified regimen at each visit, or periodic sponsor-level audit of site dosing logs) to catch future off-protocol doses before they go unreported",
+        "Retrain Site 126 study staff on deviation identification and reporting timelines and requirements",
+        "Once the underlying dosing event is filed, separately triage and classify it into the appropriate primary deviation category (e.g., based on importance/intentionality) for further CAPA action specific to that category"
+      ],
+      "requires_expedited_reporting": true,
+      "responsible_party": "Site 126 Principal Investigator, in coordination with Sponsor Quality Assurance/Clinical Monitoring",
+      "target_resolution_date": "2025-02-28"
+    }
+  },
+  {
+    "case_id": "EVAL-027",
+    "expected_category": "unreported",
+    "predicted_category": "unreported",
+    "correct": true,
+    "is_boundary_case": false,
+    "confidence": 0.9626992344856262,
+    "elapsed_seconds": 9.145681381225586,
+    "status": "queued",
+    "rubric": {
+      "summary_substantive": true,
+      "root_cause_substantive": true,
+      "capa_actions_sufficient": true,
+      "capa_actions_tailored": true,
+      "expedited_flag_correct": true,
+      "ownership_fields_present": true,
+      "_score": 1.0
+    },
+    "memo": {
+      "summary": "During database lock review, the sponsor identified that a missed Visit 4 (Week 12) study visit for Subject 127-9027 at Site 127 was never documented or filed as a protocol deviation at the time it occurred. This is an unreported/late-reported deviation, distinct from the underlying missed-visit event itself, which still requires separate classification and reporting once identified.",
+      "root_cause_narrative": "The missed Visit 4 for Subject 127-9027 was not captured by the site or sponsor monitoring processes at the time it occurred, and it was only discovered incidentally during database lock review rather than through routine deviation-reporting workflows. This indicates a gap in the ongoing deviation-identification and reconciliation process (e.g., visit-schedule tracking not cross-checked against deviation logs prior to database lock), allowing the event to go unreported for an extended period.",
+      "regulatory_citation": "Reporting-compliance gap, orthogonal to the FDA importance/intentionality axes (see data/labels.md Regulatory basis); the underlying missed-visit event must be separately triaged and classified into one of the four substantive deviation categories.",
+      "recommended_capa_actions": [
+        "Retrospectively file and classify the missed Visit 4 (Week 12) deviation for Subject 127-9027, including assessment of its impact on safety/efficacy data for that subject",
+        "Conduct a root-cause investigation into why the site's and sponsor's monitoring/reporting workflows failed to flag the missed visit prior to database lock",
+        "Perform a targeted look-back review of other subjects at Site 127 (and if resourcing allows, other sites) to check for additional unreported missed visits or deviations prior to final database lock",
+        "Implement a periodic reconciliation checkpoint (e.g., monthly visit-schedule vs. deviation-log cross-check) in the reporting workflow, to be completed well before database lock milestones",
+        "Provide refresher training to Site 127 study coordinators and the sponsor's clinical monitor on timely deviation identification and reporting requirements"
+      ],
+      "requires_expedited_reporting": false,
+      "responsible_party": "Sponsor Clinical Quality Assurance Lead, in coordination with the Site 127 Principal Investigator/Study Coordinator",
+      "target_resolution_date": "30 days from memo issuance"
+    }
+  },
+  {
+    "case_id": "EVAL-028",
+    "expected_category": "unreported",
+    "predicted_category": "unreported",
+    "correct": true,
+    "is_boundary_case": false,
+    "confidence": 0.9535335898399353,
+    "elapsed_seconds": 10.132376194000244,
+    "status": "queued",
+    "rubric": {
+      "summary_substantive": true,
+      "root_cause_substantive": true,
+      "capa_actions_sufficient": true,
+      "capa_actions_tailored": true,
+      "expedited_flag_correct": true,
+      "ownership_fields_present": true,
+      "_score": 1.0
+    },
+    "memo": {
+      "summary": "Site 128 staff verbally disclosed during a monitoring call that a protocol deviation occurred for Subject 128-9028; however, no formal deviation report or CAPA was ever filed for this event. This constitutes an unreported deviation, representing a gap in the site's reporting compliance workflow independent of the underlying event's severity.",
+      "root_cause_narrative": "The deviation involving Subject 128-9028 was known to site staff but was not escalated through the formal reporting channel, indicating a breakdown between informal awareness (verbal mention on a call) and the site's documented deviation-reporting process. This suggests either a lack of clarity on reporting triggers/thresholds, insufficient training on when and how to file a deviation report, or absence of a reconciliation step between monitor communications and the site's deviation log.",
+      "regulatory_citation": "Reporting-compliance gap, orthogonal to the FDA importance/intentionality axes; the underlying event must be separately triaged into one of the other four deviation categories once identified.",
+      "recommended_capa_actions": [
+        "Immediately obtain full details of the original event from Site 128 staff and file a retrospective deviation report for Subject 128-9028, then classify the underlying event into the appropriate category (e.g., important/non-important, intentional/unintentional) per standard triage criteria",
+        "Conduct a root-cause investigation into why the verbal disclosure did not trigger formal documentation, including review of site training records, communication logs, and monitor call notes to identify where the workflow broke down",
+        "Implement a monitoring-call checklist item requiring monitors to explicitly ask about and document any deviations mentioned informally, with immediate follow-up to confirm formal filing within a defined window (e.g., 48-72 hours)",
+        "Retrain Site 128 staff on deviation identification and reporting obligations, emphasizing that verbal mentions to monitors do not substitute for formal documentation",
+        "Perform a look-back review of recent monitoring call notes and site communications for Site 128 (and potentially other sites) to identify any other deviations mentioned but not formally filed"
+      ],
+      "requires_expedited_reporting": false,
+      "responsible_party": "Site 128 Principal Investigator / Study Coordinator, with oversight from the Sponsor's Clinical Quality Assurance / Monitoring lead",
+      "target_resolution_date": "30 days from memo issuance"
+    }
+  },
+  {
+    "case_id": "EVAL-029",
+    "expected_category": "unreported",
+    "predicted_category": "unreported",
+    "correct": true,
+    "is_boundary_case": true,
+    "confidence": 0.8421019911766052,
+    "elapsed_seconds": 10.590836763381958,
+    "status": "queued",
+    "rubric": {
+      "summary_substantive": true,
+      "root_cause_substantive": true,
+      "capa_actions_sufficient": true,
+      "capa_actions_tailored": true,
+      "expedited_flag_correct": false,
+      "ownership_fields_present": true,
+      "_score": 0.8333333333333334
+    },
+    "memo": {
+      "summary": "Audit at Site 129 identified an unreported protocol deviation: Subject 129-9029 received a double dose of Study Drug XJ-401 approximately three months prior. The dosing error was never logged in the site's deviation log nor reported to the sponsor at the time it occurred, constituting a reporting-compliance failure separate from the underlying dosing event itself.",
+      "root_cause_narrative": "The double-dosing event was not captured by the site's deviation identification and logging process, resulting in a three-month delay in sponsor awareness. This indicates a breakdown in the site's real-time deviation detection and escalation workflow, as no entry was made in the deviation log at the time of occurrence. The gap was only surfaced through an external audit rather than the site's own monitoring or reporting mechanisms, suggesting a systemic weakness in how dosing errors are flagged and routed for reporting.",
+      "regulatory_citation": "Reporting-compliance gap, orthogonal to the FDA importance/intentionality axes (see data/labels.md Regulatory basis); the underlying dosing event must be separately triaged and classified into one of the four primary deviation categories.",
+      "recommended_capa_actions": [
+        "Retrospectively file and classify the original double-dosing deviation for Subject 129-9029, including its own root cause and impact assessment, and route it to the appropriate primary category per FDA importance/intentionality criteria",
+        "Conduct a focused investigation at Site 129 into why the double dose was not entered into the deviation log or escalated to the sponsor, including interviews with site staff involved in dosing and deviation reporting on the date of occurrence",
+        "Review Site 129's deviation log entries and dosing records for the three-month gap period to check for any other unreported or under-reported events",
+        "Implement an added monitoring checkpoint requiring periodic (e.g., monthly) cross-check of dosing/drug accountability records against the deviation log to catch unreported events proactively",
+        "Retrain Site 129 staff on deviation identification and immediate reporting timelines, with emphasis on dosing errors",
+        "Notify the sponsor's Quality Assurance and Sponsor Oversight team of the confirmed reporting gap and document corrective actions in the site's CAPA file"
+      ],
+      "requires_expedited_reporting": true,
+      "responsible_party": "Site 129 Principal Investigator, in coordination with Sponsor Quality Assurance / Sponsor Oversight lead",
+      "target_resolution_date": "30 days from memo issuance"
+    }
+  },
+  {
+    "case_id": "EVAL-030",
+    "expected_category": "unreported",
+    "predicted_category": "unreported",
+    "correct": true,
+    "is_boundary_case": true,
+    "confidence": 0.3986343741416931,
+    "elapsed_seconds": 12.089451789855957,
+    "status": "queued",
+    "rubric": {
+      "summary_substantive": true,
+      "root_cause_substantive": true,
+      "capa_actions_sufficient": true,
+      "capa_actions_tailored": true,
+      "expedited_flag_correct": true,
+      "ownership_fields_present": true,
+      "_score": 1.0
+    },
+    "memo": {
+      "summary": "A for-cause audit at Site 130 identified that a non-critical lab sample collection window deviation for Subject 130-9030 was never entered into the site's deviation tracking system. The underlying deviation itself is assessed as having no safety impact, but its omission from the tracking system represents a reporting-compliance gap requiring separate corrective action.",
+      "root_cause_narrative": "The lab sample collection window deviation for Subject 130-9030 was not captured by site staff at the time it occurred and was only surfaced through an external for-cause audit rather than the site's own deviation identification and logging process. This indicates a breakdown in the site's routine deviation-recognition and reporting workflow, likely due to insufficient staff awareness of what constitutes a loggable deviation, absent or inadequate cross-checks between lab visit windows and the deviation log, or reliance on manual identification without a systematic reconciliation step.",
+      "regulatory_citation": "Reporting-compliance gap, orthogonal to the FDA importance/intentionality axes (see data/labels.md Regulatory basis); the underlying sample collection window deviation must be separately triaged and classified into one of the other four deviation categories once identified.",
+      "recommended_capa_actions": [
+        "Retrospectively classify and file the originally-missed lab sample collection window deviation for Subject 130-9030 in the site's deviation tracking system, backdated to the actual date of occurrence with an explanatory note referencing the audit finding",
+        "Conduct a root-cause investigation into why the site's reporting workflow failed to flag this deviation, including review of site staff training records, lab visit scheduling procedures, and any existing reconciliation checks between sample collection dates and protocol-specified windows",
+        "Implement a periodic reconciliation checkpoint (e.g., monthly cross-check of lab collection dates against protocol windows) within the site's reporting workflow to catch similar unflagged deviations before they are discovered only via audit",
+        "Retrain site coordinator and lab-liaison staff on deviation identification criteria for sample collection timing, with documented attestation of completion",
+        "Notify sponsor Quality Assurance of the audit finding and confirm the underlying deviation has been triaged into the appropriate substantive category per the four-category framework",
+        "Review other subjects at Site 130 for similar unflagged sample-window deviations within the same audit period to assess whether this is an isolated miss or a systemic pattern"
+      ],
+      "requires_expedited_reporting": false,
+      "responsible_party": "Site 130 Principal Investigator, in coordination with the Sponsor Quality Assurance/Clinical Monitoring lead",
+      "target_resolution_date": "30 calendar days from memo approval"
+    }
+  }
+]
