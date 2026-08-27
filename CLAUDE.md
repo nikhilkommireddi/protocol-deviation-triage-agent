@@ -66,9 +66,13 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-Set `ANTHROPIC_API_KEY` in your environment (or use `ant auth login`) before
-running `generate_reports.py`. Never commit a key or put it in a script —
-env var only.
+Set `ANTHROPIC_API_KEY` before running anything that calls Claude
+(`generate_reports.py`, the LangGraph memo-draft node, `run_eval.py`).
+Either export it in your shell, or copy `.env.example` to `.env` and fill
+in your key — `app/graph.py` and `generate_reports.py` both call
+`load_dotenv()` on import, so a project-local `.env` is picked up
+automatically. `.env` is gitignored; never commit a key or put one
+directly in a script.
 
 ## Testing
 

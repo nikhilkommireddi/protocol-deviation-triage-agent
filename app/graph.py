@@ -15,9 +15,12 @@ from typing import TypedDict
 
 import anthropic
 import torch
+from dotenv import load_dotenv
 from langgraph.graph import END, START, StateGraph
 
 from app import db
+
+load_dotenv()  # picks up ANTHROPIC_API_KEY from a local .env, if present
 
 MODEL_DIR = Path("models/deviation-classifier")
 CAPA_GUIDANCE_PATH = Path("data/capa_guidance.json")

@@ -31,6 +31,9 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 import anthropic
+from dotenv import load_dotenv
+
+load_dotenv()  # picks up ANTHROPIC_API_KEY from a local .env, if present
 
 from generate_synthetic_deviations import (
     CATEGORIES,
