@@ -6,24 +6,34 @@ guidance, and draft a review memo for human approval.
 
 ## Stack
 
-- Python, FastAPI (`app/`)
-- Hugging Face Transformers (DeBERTa-v3 fine-tuning, Phase 2)
-- LangGraph (workflow orchestration, Phase 3)
-- Anthropic API / Claude (memo drafting node, Phase 4)
-- Streamlit (human review UI, Phase 5)
-- SQLite (triage state)
+- Python, FastAPI (`app/`) — backend API
+- React + TypeScript + Vite, Tailwind CSS (`frontend/`) — review UI
+- Hugging Face Transformers / PyTorch — fine-tuned DeBERTa-v3-base classifier
+- LangGraph — workflow orchestration (`app/graph.py`)
+- Anthropic API / Claude Sonnet 5 — memo drafting node
+- SQLite — triage state (`app/db.py`)
 
 ## Repo layout
 
-- `app/` — FastAPI app (currently just `/health`; will host the mock queue
-  endpoint in Phase 3).
+- `app/` — FastAPI backend: `main.py` (HTTP endpoints), `graph.py` (the
+  5-node LangGraph triage workflow), `db.py` (SQLite persistence),
+  `schemas.py` (Pydantic request/response models).
+- `frontend/` — React + TypeScript UI (submit a deviation, review/approve
+  drafted memos). Hand-built components styled with Tailwind utility
+  classes — no component library, consistent with the rest of the project's
+  minimal-dependency approach.
 - `data/raw/` — generated-but-unsplit datasets (JSONL, one record per line).
 - `data/processed/` — labeled, train/val/test-split datasets (CSV), ready
   for fine-tuning.
 - `data/labels.md` — canonical label-schema definitions and boundary notes.
   Anything that needs a category definition (generators, classifier,
   CAPA lookup) should trace back to this file, not redefine it.
-- `scripts/` — data generation and processing scripts (see below).
+- `data/capa_guidance.json` — category → routing team, regulatory
+  reference, required CAPA elements. Read by `app/graph.py`'s CAPA-lookup
+  node and referenced by the memo-draft prompt.
+- `data/eval_cases.json` — 30 hand-authored end-to-end evaluation cases
+  (see `scripts/run_eval.py`).
+- `scripts/` — data generation, training, and evaluation scripts (see below).
 - `models/` — trained model artifacts (gitignored; too large for git).
 - `tests/` — unit tests, run with `python -m unittest`.
 
@@ -31,8 +41,10 @@ guidance, and draft a review memo for human approval.
 
 Five categories: `major`, `minor`, `technical`, `administrative`,
 `unreported`. Full definitions and boundary cases (what separates `minor`
-from `technical`, etc.) live in `data/labels.md` — currently a first draft,
-not yet validated against ICH E6(R3) or FDA Warning Letter language.
+from `technical`, etc.) live in `data/labels.md`, grounded in ICH E3(R1)
+and FDA's Dec 2024 draft guidance on protocol deviations — see that file's
+"Regulatory basis" section for how this project's 5-category scheme maps
+onto (and diverges from) official terminology.
 
 ## Dataset generation
 
@@ -58,12 +70,33 @@ Every generated record starts with `reviewed: False`. Flip to `True` during
 the manual quality-review pass before treating a record as trustworthy
 training data.
 
+## Model training and evaluation
+
+- `scripts/train_classifier.py` — fine-tunes `deberta-v3-base` on
+  `combined_deviations_labeled.csv`. Uses `optim="adafactor"`, not the
+  torch default AdamW — plain AdamW reproducibly corrupted every model
+  parameter to NaN on CPU in this environment (see the script's comment
+  and the "Fix training collapse" commit for the full diagnosis). Saves to
+  `models/deviation-classifier/` (gitignored) plus a `training_results.json`
+  alongside it.
+- `scripts/run_eval.py` — runs the 30 cases in `data/eval_cases.json`
+  through the real end-to-end pipeline (real classifier, real Claude memo
+  draft) and reports classification accuracy, a memo-completeness rubric,
+  and latency. Writes `eval_results.json` and `eval_report.md`.
+
 ## Setup
 
+Backend:
 ```
 python -m venv .venv
 .venv/Scripts/activate   # or source .venv/bin/activate on Unix
 pip install -r requirements.txt
+```
+
+Frontend:
+```
+cd frontend
+npm install
 ```
 
 Set `ANTHROPIC_API_KEY` before running anything that calls Claude
@@ -74,11 +107,26 @@ in your key — `app/graph.py` and `generate_reports.py` both call
 automatically. `.env` is gitignored; never commit a key or put one
 directly in a script.
 
+## Running it
+
+Two processes, in separate terminals:
+```
+.venv/Scripts/uvicorn app.main:app --reload        # backend, :8000
+cd frontend && npm run dev                          # frontend, :5173
+```
+The FastAPI app allows CORS from the Vite dev server origin
+(`localhost:5173`) — see `app/main.py`. That allow-list is permissive for
+local dev only and should be tightened before any real deployment.
+
 ## Testing
 
+Backend:
 ```
 python -m unittest discover tests
 ```
+Frontend has no automated test suite yet — verify with `npm run build`
+(type-checks) and manual click-through. Same scope call made for the
+Streamlit UI it replaced: no permanent UI regression tests in this pass.
 
 ## Conventions
 
@@ -89,3 +137,6 @@ python -m unittest discover tests
 - Prefer reusing entity/date-generation logic across scripts (see how
   `generate_reports.py` imports from `generate_synthetic_deviations.py`)
   over duplicating pools of fake site names, drugs, etc.
+- Frontend: Tailwind utility classes directly in JSX; repeated patterns
+  (inputs, buttons, cards) are pulled into `@apply`-based classes in
+  `frontend/src/index.css`, not a component library.

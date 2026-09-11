@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel
 
 
@@ -27,3 +29,19 @@ class TriageResult(BaseModel):
     status: str
     created_at: str
     updated_at: str
+
+
+class MemoUpdate(BaseModel):
+    summary: str
+    root_cause_narrative: str
+    regulatory_citation: str
+    recommended_capa_actions: list[str]
+    requires_expedited_reporting: bool
+    responsible_party: str
+    target_resolution_date: str
+    reviewer_note: str = ""
+
+
+class ReviewSubmission(BaseModel):
+    memo: MemoUpdate
+    status: Literal["approved", "rejected"]

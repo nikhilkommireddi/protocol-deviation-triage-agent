@@ -1,11 +1,12 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from app import db
 from app.graph import deliver_to_queue, graph
-from app.schemas import DeviationSubmission, TriageResult
+from app.schemas import DeviationSubmission, ReviewSubmission, TriageResult
 
 
 @asynccontextmanager
@@ -15,6 +16,15 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Protocol Deviation Triage Agent", lifespan=lifespan)
+
+# Permissive for local dev against the Vite dev server. Tighten this to an
+# explicit allow-list before any real deployment.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 class QueueSubmission(BaseModel):
@@ -51,6 +61,15 @@ def get_report(report_id: str):
     if record is None:
         raise HTTPException(status_code=404, detail="report not found")
     return record
+
+
+@app.post("/reports/{report_id}/review", response_model=TriageResult)
+def review_report(report_id: str, submission: ReviewSubmission):
+    record = db.get_report(report_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="report not found")
+    db.update_report(report_id, {"memo": submission.memo.model_dump(), "status": submission.status})
+    return db.get_report(report_id)
 
 
 @app.post("/queue")

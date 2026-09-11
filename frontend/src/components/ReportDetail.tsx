@@ -1,0 +1,236 @@
+import { useEffect, useState } from "react";
+import { getReport, reviewReport } from "../api";
+import type { Memo, ReviewDecision, TriageResult } from "../types";
+
+interface ReportDetailProps {
+  reportId: string;
+  onReviewed: () => void;
+}
+
+const EMPTY_MEMO: Memo = {
+  summary: "",
+  root_cause_narrative: "",
+  regulatory_citation: "",
+  recommended_capa_actions: [],
+  requires_expedited_reporting: false,
+  responsible_party: "",
+  target_resolution_date: "",
+  reviewer_note: "",
+};
+
+export function ReportDetail({ reportId, onReviewed }: ReportDetailProps) {
+  const [record, setRecord] = useState<TriageResult | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  const [memo, setMemo] = useState<Memo>(EMPTY_MEMO);
+  const [actionsText, setActionsText] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    getReport(reportId)
+      .then((r) => {
+        if (cancelled) return;
+        setRecord(r);
+        if (r.memo) {
+          setMemo(r.memo);
+          setActionsText(r.memo.recommended_capa_actions.join("\n"));
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err instanceof Error ? err.message : "Failed to load report.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [reportId]);
+
+  async function handleReview(status: ReviewDecision) {
+    setSubmitting(true);
+    setError(null);
+    try {
+      const editedMemo: Memo = {
+        ...memo,
+        recommended_capa_actions: actionsText
+          .split("\n")
+          .map((line) => line.trim())
+          .filter(Boolean),
+      };
+      const updated = await reviewReport(reportId, { memo: editedMemo, status });
+      setRecord(updated);
+      onReviewed();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Review submission failed.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  if (loading) return <p className="text-slate-500">Loading report...</p>;
+  if (error && !record) return <p className="text-red-600">{error}</p>;
+  if (!record) return null;
+
+  return (
+    <div className="card space-y-6">
+      <div className="grid grid-cols-3 gap-6">
+        <div className="col-span-2">
+          <h3 className="font-medium text-slate-800 mb-1">
+            Original report ({record.protocol_id} / {record.subject_id})
+          </h3>
+          <textarea className="input h-28" value={record.text} disabled />
+          <p className="text-xs text-slate-500 mt-1">
+            Deviation date: {record.deviation_date} | Discovery date: {record.discovery_date}
+          </p>
+        </div>
+
+        <div>
+          <h3 className="font-medium text-slate-800 mb-1">Classification</h3>
+          {record.category ? (
+            <>
+              <p className="text-sm">
+                Category: <span className="font-semibold">{record.category}</span>
+              </p>
+              <p className="text-sm">Confidence: {record.confidence?.toFixed(2)}</p>
+              {(record.confidence ?? 1) < 0.6 && (
+                <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1 mt-2">
+                  Low confidence -- review the category assignment carefully.
+                </p>
+              )}
+            </>
+          ) : (
+            <p className="text-sm text-slate-500">Not yet classified.</p>
+          )}
+        </div>
+      </div>
+
+      {record.capa_guidance && (
+        <details className="rounded-md border border-slate-200 p-3">
+          <summary className="cursor-pointer font-medium text-slate-700">CAPA guidance</summary>
+          <div className="mt-2 text-sm space-y-1">
+            <p>
+              <span className="font-medium">Routing team:</span>{" "}
+              {record.capa_guidance.routing_team}
+            </p>
+            <p>
+              <span className="font-medium">Regulatory reference:</span>{" "}
+              {record.capa_guidance.regulatory_reference}
+            </p>
+            <p className="font-medium">Required CAPA elements:</p>
+            <ul className="list-disc list-inside">
+              {record.capa_guidance.required_capa_elements.map((el) => (
+                <li key={el}>{el}</li>
+              ))}
+            </ul>
+          </div>
+        </details>
+      )}
+
+      {record.memo ? (
+        <div className="space-y-4 border-t border-slate-200 pt-4">
+          <h3 className="font-medium text-slate-800">Drafted memo (edit as needed before approving)</h3>
+
+          <Field label="Summary">
+            <textarea
+              className="input h-20"
+              value={memo.summary}
+              onChange={(e) => setMemo({ ...memo, summary: e.target.value })}
+            />
+          </Field>
+          <Field label="Root cause narrative">
+            <textarea
+              className="input h-24"
+              value={memo.root_cause_narrative}
+              onChange={(e) => setMemo({ ...memo, root_cause_narrative: e.target.value })}
+            />
+          </Field>
+          <Field label="Regulatory citation">
+            <textarea
+              className="input h-16"
+              value={memo.regulatory_citation}
+              onChange={(e) => setMemo({ ...memo, regulatory_citation: e.target.value })}
+            />
+          </Field>
+          <Field label="Recommended CAPA actions (one per line)">
+            <textarea
+              className="input h-28"
+              value={actionsText}
+              onChange={(e) => setActionsText(e.target.value)}
+            />
+          </Field>
+
+          <label className="flex items-center gap-2 text-sm text-slate-700">
+            <input
+              type="checkbox"
+              checked={memo.requires_expedited_reporting}
+              onChange={(e) =>
+                setMemo({ ...memo, requires_expedited_reporting: e.target.checked })
+              }
+            />
+            Requires expedited reporting
+          </label>
+
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Responsible party">
+              <input
+                className="input"
+                value={memo.responsible_party}
+                onChange={(e) => setMemo({ ...memo, responsible_party: e.target.value })}
+              />
+            </Field>
+            <Field label="Target resolution date">
+              <input
+                className="input"
+                value={memo.target_resolution_date}
+                onChange={(e) => setMemo({ ...memo, target_resolution_date: e.target.value })}
+              />
+            </Field>
+          </div>
+
+          <Field label="Reviewer note (optional)">
+            <input
+              className="input"
+              value={memo.reviewer_note ?? ""}
+              onChange={(e) => setMemo({ ...memo, reviewer_note: e.target.value })}
+            />
+          </Field>
+
+          <div className="flex gap-3">
+            <button
+              className="btn-primary"
+              disabled={submitting}
+              onClick={() => handleReview("approved")}
+            >
+              Approve
+            </button>
+            <button
+              className="btn-danger"
+              disabled={submitting}
+              onClick={() => handleReview("rejected")}
+            >
+              Reject
+            </button>
+          </div>
+
+          {error && <p className="text-red-600 text-sm">{error}</p>}
+        </div>
+      ) : (
+        <p className="text-slate-500">Memo not yet drafted for this report.</p>
+      )}
+    </div>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="block">
+      <span className="block text-sm font-medium text-slate-700 mb-1">{label}</span>
+      {children}
+    </label>
+  );
+}
