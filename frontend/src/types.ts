@@ -7,6 +7,15 @@ export interface DeviationSubmission {
   text: string;
 }
 
+export interface ExtractedFields {
+  protocol_id: string;
+  site_id: string;
+  subject_id: string;
+  deviation_date: string;
+  discovery_date: string;
+  text: string;
+}
+
 export interface CapaGuidance {
   routing_team: string;
   regulatory_reference: string;

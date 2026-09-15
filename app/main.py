@@ -1,12 +1,15 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from app import db
 from app.graph import deliver_to_queue, graph
-from app.schemas import DeviationSubmission, ReviewSubmission, TriageResult
+from app.pdf_extract import extract_from_pdf
+from app.schemas import DeviationSubmission, ExtractedFields, ReviewSubmission, TriageResult
+
+MAX_PDF_SIZE_BYTES = 10 * 1024 * 1024
 
 
 @asynccontextmanager
@@ -48,6 +51,24 @@ def submit_report(submission: DeviationSubmission):
     }
     result_state = graph.invoke(initial_state)
     return db.get_report(result_state["report_id"])
+
+
+@app.post("/reports/extract-pdf", response_model=ExtractedFields)
+async def extract_pdf_fields(file: UploadFile = File(...)):
+    if file.content_type != "application/pdf" and not (file.filename or "").lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Uploaded file must be a PDF.")
+
+    pdf_bytes = await file.read()
+    if len(pdf_bytes) > MAX_PDF_SIZE_BYTES:
+        raise HTTPException(status_code=400, detail="PDF exceeds the 10MB size limit.")
+    if not pdf_bytes:
+        raise HTTPException(status_code=400, detail="Uploaded file is empty.")
+
+    try:
+        extracted = extract_from_pdf(pdf_bytes)
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"PDF extraction failed: {exc}") from exc
+    return extracted
 
 
 @app.get("/reports", response_model=list[TriageResult])

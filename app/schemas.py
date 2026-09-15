@@ -14,6 +14,15 @@ class DeviationSubmission(BaseModel):
     text: str
 
 
+class ExtractedFields(BaseModel):
+    protocol_id: str
+    site_id: str
+    subject_id: str
+    deviation_date: str
+    discovery_date: str
+    text: str
+
+
 class TriageResult(BaseModel):
     report_id: str
     protocol_id: str

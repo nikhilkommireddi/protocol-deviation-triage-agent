@@ -1,5 +1,6 @@
 import type {
   DeviationSubmission,
+  ExtractedFields,
   ReviewSubmission,
   TriageResult,
 } from "./types";
@@ -25,6 +26,23 @@ export function submitReport(submission: DeviationSubmission): Promise<TriageRes
     method: "POST",
     body: JSON.stringify(submission),
   });
+}
+
+export async function extractFromPdf(file: File): Promise<ExtractedFields> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  // No Content-Type header here -- the browser sets multipart/form-data
+  // with the correct boundary itself; setting it manually breaks the upload.
+  const response = await fetch(`${API_BASE_URL}/reports/extract-pdf`, {
+    method: "POST",
+    body: formData,
+  });
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`PDF extraction failed (${response.status}): ${body}`);
+  }
+  return response.json() as Promise<ExtractedFields>;
 }
 
 export function listReports(): Promise<TriageResult[]> {
