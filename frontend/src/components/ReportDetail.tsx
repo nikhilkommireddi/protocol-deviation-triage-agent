@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
+import { CheckCircle2, Download, FileText, ShieldAlert, XCircle } from "lucide-react";
 import { getReport, reviewReport } from "../api";
 import type { Memo, ReviewDecision, TriageResult } from "../types";
+import { categoryBadgeClass, statusBadgeClass } from "../lib/badges";
+import { generateReportPdf } from "../lib/pdfReport";
 
 interface ReportDetailProps {
   reportId: string;
@@ -78,6 +81,22 @@ export function ReportDetail({ reportId, onReviewed }: ReportDetailProps) {
 
   return (
     <div className="card space-y-6">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-2">
+          <FileText className="w-4 h-4 text-slate-400" />
+          <span className="font-mono text-xs text-slate-500">{record.report_id.slice(0, 8)}</span>
+          <span className={statusBadgeClass(record.status)}>{record.status}</span>
+          {record.category && <span className={categoryBadgeClass(record.category)}>{record.category}</span>}
+        </div>
+        <button
+          className="btn-secondary flex items-center gap-2"
+          onClick={() => generateReportPdf(record)}
+        >
+          <Download className="w-4 h-4" />
+          Download Report
+        </button>
+      </div>
+
       <div className="grid grid-cols-3 gap-6">
         <div className="col-span-2">
           <h3 className="font-medium text-slate-800 mb-1">
@@ -98,7 +117,8 @@ export function ReportDetail({ reportId, onReviewed }: ReportDetailProps) {
               </p>
               <p className="text-sm">Confidence: {record.confidence?.toFixed(2)}</p>
               {(record.confidence ?? 1) < 0.6 && (
-                <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1 mt-2">
+                <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1 mt-2 flex items-center gap-1.5">
+                  <ShieldAlert className="w-4 h-4 shrink-0" />
                   Low confidence -- review the category assignment carefully.
                 </p>
               )}
@@ -202,17 +222,19 @@ export function ReportDetail({ reportId, onReviewed }: ReportDetailProps) {
 
           <div className="flex gap-3">
             <button
-              className="btn-primary"
+              className="btn-primary flex items-center gap-2"
               disabled={submitting}
               onClick={() => handleReview("approved")}
             >
+              <CheckCircle2 className="w-4 h-4" />
               Approve
             </button>
             <button
-              className="btn-danger"
+              className="btn-danger flex items-center gap-2"
               disabled={submitting}
               onClick={() => handleReview("rejected")}
             >
+              <XCircle className="w-4 h-4" />
               Reject
             </button>
           </div>
