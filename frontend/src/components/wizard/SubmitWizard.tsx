@@ -4,7 +4,7 @@ import { StepUpload } from "./StepUpload";
 import { StepReview } from "./StepReview";
 import { StepTriage } from "./StepTriage";
 import { PageHeader } from "../PageHeader";
-import type { TriageResult } from "../../types";
+import type { ExtractedFields, TriageResult } from "../../types";
 
 interface SubmitWizardProps {
   onSubmitted: (result: TriageResult) => void;
@@ -39,12 +39,19 @@ export function SubmitWizard({ onSubmitted }: SubmitWizardProps) {
   const [fields, setFields] = useState<WizardFields>(DEFAULT_FIELDS);
   const [extractedText, setExtractedText] = useState<string | null>(null);
 
-  function mergeExtracted(extracted: Partial<WizardFields>) {
+  function mergeExtracted(extracted: ExtractedFields) {
+    // ExtractedFields mirrors the backend's snake_case schema; WizardFields
+    // is camelCase. Map explicitly rather than spreading -- the two key
+    // sets don't overlap, so a spread silently no-ops instead of erroring.
     // Extraction can leave fields blank (not found in the PDF) -- an empty
     // string shouldn't clobber a value already in the form.
     setFields((prev) => ({
-      ...prev,
-      ...Object.fromEntries(Object.entries(extracted).filter(([, v]) => !!v)),
+      protocolId: extracted.protocol_id || prev.protocolId,
+      siteId: extracted.site_id || prev.siteId,
+      subjectId: extracted.subject_id || prev.subjectId,
+      deviationDate: extracted.deviation_date || prev.deviationDate,
+      discoveryDate: extracted.discovery_date || prev.discoveryDate,
+      text: extracted.text || prev.text,
     }));
   }
 
