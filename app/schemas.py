@@ -33,8 +33,12 @@ class TriageResult(BaseModel):
     text: str
     category: str | None = None
     confidence: float | None = None
+    protocol_findings: dict | None = None
+    history_findings: dict | None = None
+    adjudication: dict | None = None
     capa_guidance: dict | None = None
     memo: dict | None = None
+    verification: dict | None = None
     status: str
     created_at: str
     updated_at: str

@@ -1,0 +1,27 @@
+{
+  "protocol_id": "EVL-2024-123",
+  "visit_schedule": [
+    {"visit": "Week 4", "target_day": 28, "window_days": 3},
+    {"visit": "Week 8", "target_day": 56, "window_days": 3}
+  ],
+  "eligibility_criteria": {
+    "inclusion": ["Age 18-75", "Confirmed diagnosis per protocol Section 4.1"],
+    "exclusion": ["Prior treatment with a competing investigational agent within 90 days"]
+  },
+  "consent_versions": [
+    {
+      "version": "v2.1",
+      "effective_date": "2023-10-15",
+      "superseded_date": "2024-02-20",
+      "summary": "Initial consent form.",
+      "material_safety_change": false
+    },
+    {
+      "version": "v4.0",
+      "effective_date": "2024-02-20",
+      "superseded_date": null,
+      "summary": "Reformatted for the sponsor's updated consent template and corrected a sponsor contact address; no new safety, risk, or procedural information.",
+      "material_safety_change": false
+    }
+  ]
+}

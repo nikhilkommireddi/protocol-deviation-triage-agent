@@ -25,8 +25,12 @@ CREATE TABLE IF NOT EXISTS triage_records (
     text TEXT NOT NULL,
     category TEXT,
     confidence REAL,
+    protocol_findings TEXT,
+    history_findings TEXT,
+    adjudication TEXT,
     capa_guidance TEXT,
     memo TEXT,
+    verification TEXT,
     status TEXT NOT NULL,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
@@ -103,7 +107,7 @@ def update_report(report_id: str, fields: dict, db_path: Path | str | None = Non
 
 def _row_to_dict(row: sqlite3.Row) -> dict:
     d = dict(row)
-    for key in ("capa_guidance", "memo"):
+    for key in ("protocol_findings", "history_findings", "adjudication", "capa_guidance", "memo", "verification"):
         if d.get(key):
             d[key] = json.loads(d[key])
     return d
@@ -125,6 +129,27 @@ def list_reports(db_path: Path | str | None = None) -> list[dict]:
     try:
         rows = conn.execute(
             "SELECT * FROM triage_records ORDER BY created_at DESC"
+        ).fetchall()
+        return [_row_to_dict(r) for r in rows]
+    finally:
+        conn.close()
+
+
+def list_reports_by_site(
+    protocol_id: str,
+    site_id: str,
+    exclude_report_id: str | None = None,
+    db_path: Path | str | None = None,
+) -> list[dict]:
+    conn = get_connection(db_path)
+    try:
+        rows = conn.execute(
+            """
+            SELECT * FROM triage_records
+            WHERE protocol_id = ? AND site_id = ? AND report_id != ?
+            ORDER BY deviation_date ASC
+            """,
+            (protocol_id, site_id, exclude_report_id or ""),
         ).fetchall()
         return [_row_to_dict(r) for r in rows]
     finally:

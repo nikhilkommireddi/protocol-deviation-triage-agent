@@ -28,6 +28,23 @@ MIN_WORDS = 15
 MIN_CAPA_ACTIONS = 2
 
 
+def check_evidence(case: dict, final_state: dict) -> bool | None:
+    """Grades whether the agent pipeline actually found the evidence a
+    case's correct category depends on -- not just whether it landed on
+    the right category, which a lucky guess could also produce. Returns
+    None for cases with no expected_evidence field (most of them)."""
+    expected = case.get("expected_evidence")
+    if not expected:
+        return None
+    if "material_safety_change" in expected:
+        actual = (final_state.get("protocol_findings") or {}).get("material_safety_change")
+        return actual == expected["material_safety_change"]
+    if "pattern_detected" in expected:
+        actual = (final_state.get("history_findings") or {}).get("pattern_detected")
+        return actual == expected["pattern_detected"]
+    return None
+
+
 def score_memo(memo: dict, expected_category: str, capa_guidance: dict) -> dict:
     required_elements = set(capa_guidance.get("required_capa_elements", []))
     actions = memo.get("recommended_capa_actions", [])
@@ -74,6 +91,7 @@ def main() -> None:
 
         predicted = final_state["category"]
         rubric = score_memo(final_state["memo"], case["expected_category"], guidance_by_category[predicted])
+        evidence_correct = check_evidence(case, final_state)
 
         results.append(
             {
@@ -86,10 +104,13 @@ def main() -> None:
                 "elapsed_seconds": elapsed,
                 "status": final_state["status"],
                 "rubric": rubric,
+                "evidence_correct": evidence_correct,
+                "adjudication": final_state.get("adjudication"),
                 "memo": final_state["memo"],
             }
         )
-        print(f"  -> predicted {predicted}, rubric score {rubric['_score']:.2f}, {elapsed:.1f}s")
+        evidence_note = "" if evidence_correct is None else f", evidence {'OK' if evidence_correct else 'WRONG'}"
+        print(f"  -> predicted {predicted}, rubric score {rubric['_score']:.2f}{evidence_note}, {elapsed:.1f}s")
 
     with RESULTS_JSON_PATH.open("w", encoding="utf-8") as f:
         json.dump(results, f, indent=2)
@@ -119,6 +140,8 @@ def build_report(results: list[dict]) -> str:
     latencies = [r["elapsed_seconds"] for r in results]
 
     misclassified = [r for r in results if not r["correct"]]
+    evidence_checked = [r for r in results if r["evidence_correct"] is not None]
+    evidence_wrong = [r for r in evidence_checked if not r["evidence_correct"]]
 
     lines = [
         "# Phase 6 Evaluation Report",
@@ -135,6 +158,20 @@ def build_report(results: list[dict]) -> str:
     ]
     for k, rate in rubric_pass_rates.items():
         lines.append(f"- `{k}`: {rate:.1%} pass rate")
+
+    lines += [
+        "",
+        "## Evidence grounding (agentic pipeline)",
+        f"- Cases with a checkable expected_evidence field: {len(evidence_checked)}",
+    ]
+    if evidence_checked:
+        lines.append(
+            f"- Correct evidence found: {len(evidence_checked) - len(evidence_wrong)}/{len(evidence_checked)}"
+        )
+        for r in evidence_wrong:
+            lines.append(f"  - {r['case_id']}: expected evidence not found/matched by the agent pipeline")
+    else:
+        lines.append("- None")
 
     lines += [
         "",

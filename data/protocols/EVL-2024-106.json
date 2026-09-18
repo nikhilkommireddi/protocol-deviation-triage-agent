@@ -1,0 +1,28 @@
+{
+  "protocol_id": "EVL-2024-106",
+  "visit_schedule": [
+    {"visit": "Week 4", "target_day": 28, "window_days": 3},
+    {"visit": "Week 8", "target_day": 56, "window_days": 3},
+    {"visit": "Week 12", "target_day": 84, "window_days": 5}
+  ],
+  "eligibility_criteria": {
+    "inclusion": ["Age 18-75", "Confirmed diagnosis per protocol Section 4.1"],
+    "exclusion": ["eGFR < 30 mL/min/1.73m^2 (renal impairment)"]
+  },
+  "consent_versions": [
+    {
+      "version": "v2.1",
+      "effective_date": "2023-11-01",
+      "superseded_date": "2024-03-01",
+      "summary": "Initial consent form; no drug-interaction warnings for concomitant medications.",
+      "material_safety_change": false
+    },
+    {
+      "version": "v4.0",
+      "effective_date": "2024-03-01",
+      "superseded_date": null,
+      "summary": "Added a new warning about a significant drug interaction between the investigational product and commonly co-prescribed anticoagulants, based on emerging safety data.",
+      "material_safety_change": true
+    }
+  ]
+}

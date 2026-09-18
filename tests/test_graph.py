@@ -2,7 +2,9 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
+
+import anthropic
 
 from app import db, graph
 
@@ -103,10 +105,160 @@ class TestGraphNodes(unittest.TestCase):
         record = db.get_report(ingested["report_id"])
         self.assertEqual(record["status"], "queued")
 
+    @patch("app.graph.investigate_protocol")
+    def test_protocol_investigate_node(self, mock_investigate):
+        fake_findings = {
+            "relevant": True,
+            "summary": "Consent v4.0 was in effect and added a material safety warning.",
+            "citation": "Consent v4.0, effective 2024-03-01",
+            "material_safety_change": True,
+        }
+        mock_investigate.return_value = fake_findings
+        ingested = self._ingest()
+        state = {
+            "report_id": ingested["report_id"],
+            "text": ingested["text"],
+            "protocol_id": "EVL-2024-106",
+            "deviation_date": "2024-07-06",
+        }
+
+        result = graph.protocol_investigate_node(state)
+
+        self.assertEqual(result["protocol_findings"], fake_findings)
+        record = db.get_report(ingested["report_id"])
+        self.assertEqual(record["protocol_findings"], fake_findings)
+
+    @patch("app.graph.investigate_history")
+    def test_site_history_node(self, mock_investigate):
+        fake_findings = {"prior_count": 2, "pattern_detected": True, "summary": "Recurring dosing-time slip."}
+        mock_investigate.return_value = fake_findings
+        ingested = self._ingest()
+        state = {
+            "report_id": ingested["report_id"],
+            "text": ingested["text"],
+            "protocol_id": "PDA-2024-001",
+            "site_id": "001",
+        }
+
+        result = graph.site_history_node(state)
+
+        self.assertEqual(result["history_findings"], fake_findings)
+        mock_investigate.assert_called_once()
+        record = db.get_report(ingested["report_id"])
+        self.assertEqual(record["history_findings"], fake_findings)
+
+    @patch("app.graph.adjudicate")
+    def test_adjudicate_node_first_pass(self, mock_adjudicate):
+        mock_adjudicate.return_value = {
+            "final_category": "major",
+            "confidence": 0.9,
+            "overridden": True,
+            "override_reason": "Consent v4.0 withheld material safety info.",
+            "classifier_category": "administrative",
+        }
+        ingested = self._ingest()
+        state = {
+            "report_id": ingested["report_id"],
+            "text": ingested["text"],
+            "category": "administrative",
+            "confidence": 0.6,
+            "protocol_findings": {"relevant": True},
+            "history_findings": {"pattern_detected": False},
+        }
+
+        result = graph.adjudicate_node(state)
+
+        self.assertEqual(result["category"], "major")
+        self.assertEqual(result["retry_count"], 0)
+        self.assertTrue(result["adjudication"]["overridden"])
+        record = db.get_report(ingested["report_id"])
+        self.assertEqual(record["category"], "major")
+
+    @patch("app.graph.adjudicate")
+    def test_adjudicate_node_retry_increments_count(self, mock_adjudicate):
+        mock_adjudicate.return_value = {
+            "final_category": "major",
+            "confidence": 0.9,
+            "overridden": True,
+            "override_reason": "Corrected per verification feedback.",
+            "classifier_category": "administrative",
+        }
+        ingested = self._ingest()
+        state = {
+            "report_id": ingested["report_id"],
+            "text": ingested["text"],
+            "category": "administrative",
+            "confidence": 0.6,
+            "protocol_findings": {"relevant": True},
+            "history_findings": {"pattern_detected": False},
+            "verification": {"passes": False, "issues": ["category doesn't match citation"]},
+            "retry_count": 0,
+        }
+
+        result = graph.adjudicate_node(state)
+
+        self.assertEqual(result["retry_count"], 1)
+        call_kwargs = mock_adjudicate.call_args.kwargs
+        self.assertIn("category doesn't match citation", call_kwargs["verification_feedback"])
+
+    @patch("app.graph.verify")
+    def test_verify_node(self, mock_verify):
+        mock_verify.return_value = {"passes": True, "issues": []}
+        ingested = self._ingest()
+        state = {
+            "report_id": ingested["report_id"],
+            "adjudication": {"final_category": "major"},
+            "memo": {"summary": "s"},
+            "protocol_findings": {"relevant": False},
+            "history_findings": {"pattern_detected": False},
+        }
+
+        result = graph.verify_node(state)
+
+        self.assertEqual(result["status"], "verified")
+        record = db.get_report(ingested["report_id"])
+        self.assertEqual(record["status"], "verified")
+
+    def test_route_after_verify_passes(self):
+        state = {"verification": {"passes": True, "issues": []}, "retry_count": 0}
+        self.assertEqual(graph.route_after_verify(state), "proceed")
+
+    def test_route_after_verify_retries_once(self):
+        state = {"verification": {"passes": False, "issues": ["x"]}, "retry_count": 0}
+        self.assertEqual(graph.route_after_verify(state), "retry")
+
+    def test_route_after_verify_stops_after_max_retries(self):
+        state = {"verification": {"passes": False, "issues": ["x"]}, "retry_count": 1}
+        self.assertEqual(graph.route_after_verify(state), "proceed")
+
+    @patch("app.graph.verify")
     @patch("app.graph.draft_memo")
+    @patch("app.graph.adjudicate")
+    @patch("app.graph.investigate_history")
+    @patch("app.graph.investigate_protocol")
     @patch("app.graph.predict_category")
-    def test_full_graph_end_to_end(self, mock_predict, mock_draft):
+    def test_full_graph_end_to_end(
+        self, mock_predict, mock_investigate_protocol, mock_investigate_history, mock_adjudicate, mock_draft, mock_verify
+    ):
         mock_predict.return_value = ("technical", 0.88)
+        mock_investigate_protocol.return_value = {
+            "relevant": False,
+            "summary": "No relevant protocol facts.",
+            "citation": "",
+            "material_safety_change": False,
+        }
+        mock_investigate_history.return_value = {
+            "prior_count": 0,
+            "pattern_detected": False,
+            "summary": "No prior deviations on file for this site.",
+        }
+        mock_adjudicate.return_value = {
+            "final_category": "technical",
+            "confidence": 0.88,
+            "overridden": False,
+            "override_reason": "",
+            "classifier_category": "technical",
+        }
         mock_draft.return_value = {
             "summary": "s",
             "root_cause_narrative": "r",
@@ -116,6 +268,7 @@ class TestGraphNodes(unittest.TestCase):
             "responsible_party": "IT",
             "target_resolution_date": "2024-07-01",
         }
+        mock_verify.return_value = {"passes": True, "issues": []}
 
         initial_state = {
             "protocol_id": "PDA-2024-002",
@@ -131,12 +284,196 @@ class TestGraphNodes(unittest.TestCase):
         self.assertEqual(final_state["status"], "queued")
         self.assertIn("capa_guidance", final_state)
         self.assertIn("memo", final_state)
+        self.assertIn("adjudication", final_state)
+        self.assertIn("verification", final_state)
 
         record = db.get_report(final_state["report_id"])
         self.assertEqual(record["status"], "queued")
         self.assertEqual(record["category"], "technical")
         self.assertIsInstance(record["memo"], dict)
         self.assertIsInstance(record["capa_guidance"], dict)
+        self.assertIsInstance(record["adjudication"], dict)
+        self.assertIsInstance(record["verification"], dict)
+
+    @patch("app.graph.verify")
+    @patch("app.graph.draft_memo")
+    @patch("app.graph.adjudicate")
+    @patch("app.graph.investigate_history")
+    @patch("app.graph.investigate_protocol")
+    @patch("app.graph.predict_category")
+    def test_full_graph_retries_once_on_verification_failure(
+        self, mock_predict, mock_investigate_protocol, mock_investigate_history, mock_adjudicate, mock_draft, mock_verify
+    ):
+        mock_predict.return_value = ("administrative", 0.6)
+        mock_investigate_protocol.return_value = {
+            "relevant": True,
+            "summary": "Consent v4.0 withheld material safety info.",
+            "citation": "Consent v4.0, effective 2024-03-01",
+            "material_safety_change": True,
+        }
+        mock_investigate_history.return_value = {
+            "prior_count": 0,
+            "pattern_detected": False,
+            "summary": "No prior deviations on file for this site.",
+        }
+        # First adjudication call misses the override; second (after verify
+        # flags it) corrects it -- this is the retry loop actually working.
+        mock_adjudicate.side_effect = [
+            {
+                "final_category": "administrative",
+                "confidence": 0.6,
+                "overridden": False,
+                "override_reason": "",
+                "classifier_category": "administrative",
+            },
+            {
+                "final_category": "major",
+                "confidence": 0.9,
+                "overridden": True,
+                "override_reason": "Consent v4.0 withheld material safety info.",
+                "classifier_category": "administrative",
+            },
+        ]
+        mock_draft.return_value = {
+            "summary": "s",
+            "root_cause_narrative": "r",
+            "regulatory_citation": "c",
+            "recommended_capa_actions": ["a"],
+            "requires_expedited_reporting": True,
+            "responsible_party": "QA",
+            "target_resolution_date": "2024-07-01",
+        }
+        mock_verify.side_effect = [
+            {"passes": False, "issues": ["final_category doesn't reflect the material safety change found"]},
+            {"passes": True, "issues": []},
+        ]
+
+        initial_state = {
+            "protocol_id": "EVL-2024-106",
+            "site_id": "106",
+            "subject_id": "106-9006",
+            "deviation_date": "2024-07-06",
+            "discovery_date": "2024-07-08",
+            "raw_text": "Site 106 used informed consent form v2.1 instead of the currently approved v4.0.",
+        }
+        final_state = graph.graph.invoke(initial_state)
+
+        self.assertEqual(final_state["category"], "major")
+        self.assertEqual(mock_adjudicate.call_count, 2)
+        self.assertEqual(mock_verify.call_count, 2)
+        self.assertEqual(final_state["status"], "queued")
+
+
+def _fake_connection_error():
+    request = Mock()
+    return anthropic.APIConnectionError(message="boom", request=request)
+
+
+class TestRetryAndFailureHandling(unittest.TestCase):
+    def setUp(self):
+        self._tmp_dir = tempfile.TemporaryDirectory()
+        self._db_path = Path(self._tmp_dir.name) / "test_triage.db"
+        self._orig_db_path = db.DB_PATH
+        db.DB_PATH = self._db_path
+        db.init_db()
+
+    def tearDown(self):
+        db.DB_PATH = self._orig_db_path
+        self._tmp_dir.cleanup()
+
+    def test_call_with_retries_succeeds_after_transient_failures(self):
+        fn = Mock(side_effect=[_fake_connection_error(), _fake_connection_error(), "ok"])
+        result = graph._call_with_retries(fn, max_attempts=3, base_delay=0)
+        self.assertEqual(result, "ok")
+        self.assertEqual(fn.call_count, 3)
+
+    def test_call_with_retries_raises_after_exhausting_attempts(self):
+        fn = Mock(side_effect=_fake_connection_error())
+        with self.assertRaises(anthropic.APIConnectionError):
+            graph._call_with_retries(fn, max_attempts=3, base_delay=0)
+        self.assertEqual(fn.call_count, 3)
+
+    def test_call_with_retries_does_not_retry_other_exceptions(self):
+        fn = Mock(side_effect=ValueError("not retryable"))
+        with self.assertRaises(ValueError):
+            graph._call_with_retries(fn, max_attempts=3, base_delay=0)
+        self.assertEqual(fn.call_count, 1)
+
+    @patch("app.graph.predict_category")
+    def test_classify_node_wraps_failure_as_triage_agent_error(self, mock_predict):
+        mock_predict.side_effect = RuntimeError("model weights missing")
+        state = {"report_id": "r1", "text": "text"}
+        with self.assertRaises(graph.TriageAgentError):
+            graph.classify_node(state)
+
+    @patch("app.graph.investigate_protocol")
+    def test_protocol_investigate_node_degrades_gracefully(self, mock_investigate):
+        mock_investigate.side_effect = _fake_connection_error()
+        state = {
+            "report_id": "r1",
+            "text": "text",
+            "protocol_id": "PDA-2024-001",
+            "deviation_date": "2024-05-01",
+        }
+        result = graph.protocol_investigate_node(state)
+        self.assertFalse(result["protocol_findings"]["relevant"])
+        self.assertIn("could not be completed", result["protocol_findings"]["summary"])
+
+    @patch("app.graph.investigate_history")
+    def test_site_history_node_degrades_gracefully(self, mock_investigate):
+        mock_investigate.side_effect = _fake_connection_error()
+        # Give it a prior report so investigate_history is actually reached
+        # (with none on file, site_history_node short-circuits before calling it).
+        db.insert_report(
+            {
+                "report_id": "prior-1",
+                "protocol_id": "PDA-2024-001",
+                "site_id": "001",
+                "subject_id": "001-0000",
+                "deviation_date": "2024-04-01",
+                "discovery_date": "2024-04-01",
+                "text": "Some prior deviation.",
+                "status": "queued",
+            }
+        )
+        state = {"report_id": "r1", "text": "text", "protocol_id": "PDA-2024-001", "site_id": "001"}
+        result = graph.site_history_node(state)
+        self.assertEqual(result["history_findings"]["prior_count"], -1)
+        self.assertIn("could not be checked", result["history_findings"]["summary"])
+
+    @patch("app.graph.adjudicate")
+    def test_adjudicate_node_wraps_failure_as_triage_agent_error(self, mock_adjudicate):
+        mock_adjudicate.side_effect = _fake_connection_error()
+        state = {
+            "report_id": "r1",
+            "text": "text",
+            "category": "minor",
+            "confidence": 0.7,
+            "protocol_findings": {"relevant": False},
+            "history_findings": {"pattern_detected": False},
+        }
+        with self.assertRaises(graph.TriageAgentError):
+            graph.adjudicate_node(state)
+
+    @patch("app.graph.draft_memo")
+    def test_memo_draft_node_wraps_failure_as_triage_agent_error(self, mock_draft):
+        mock_draft.side_effect = _fake_connection_error()
+        state = {"report_id": "r1", "text": "text", "category": "minor", "capa_guidance": {}}
+        with self.assertRaises(graph.TriageAgentError):
+            graph.memo_draft_node(state)
+
+    @patch("app.graph.verify")
+    def test_verify_node_wraps_failure_as_triage_agent_error(self, mock_verify):
+        mock_verify.side_effect = _fake_connection_error()
+        state = {
+            "report_id": "r1",
+            "adjudication": {"final_category": "minor"},
+            "memo": {"summary": "s"},
+            "protocol_findings": {"relevant": False},
+            "history_findings": {"pattern_detected": False},
+        }
+        with self.assertRaises(graph.TriageAgentError):
+            graph.verify_node(state)
 
 
 if __name__ == "__main__":

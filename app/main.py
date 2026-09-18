@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from app import db
-from app.graph import deliver_to_queue, graph
+from app.graph import TriageAgentError, deliver_to_queue, graph
 from app.pdf_extract import extract_from_pdf
 from app.schemas import DeviationSubmission, ExtractedFields, ReviewSubmission, TriageResult
 
@@ -49,7 +49,10 @@ def submit_report(submission: DeviationSubmission):
         "discovery_date": submission.discovery_date,
         "raw_text": submission.text,
     }
-    result_state = graph.invoke(initial_state)
+    try:
+        result_state = graph.invoke(initial_state)
+    except TriageAgentError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
     return db.get_report(result_state["report_id"])
 
 

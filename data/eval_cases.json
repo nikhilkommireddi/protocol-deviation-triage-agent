@@ -63,7 +63,8 @@
     "discovery_date": "2024-07-08",
     "text": "Site 106 used informed consent form v2.1 for Subject 106-9006 instead of the currently approved v4.0. Review confirmed v4.0 added a new warning about a significant drug interaction that was never discussed with the subject before dosing began.",
     "expected_category": "major",
-    "is_boundary_case": true
+    "is_boundary_case": true,
+    "expected_evidence": {"material_safety_change": true}
   },
   {
     "case_id": "EVAL-007",
@@ -250,7 +251,8 @@
     "discovery_date": "2024-07-26",
     "text": "Site 123 used informed consent form v2.1 for Subject 123-9023 instead of the currently approved v4.0. Review confirmed v4.0 contained only formatting and administrative changes, with no new safety information, and the subject's consent otherwise remained valid.",
     "expected_category": "administrative",
-    "is_boundary_case": true
+    "is_boundary_case": true,
+    "expected_evidence": {"material_safety_change": false}
   },
   {
     "case_id": "EVAL-024",
@@ -328,5 +330,41 @@
     "text": "During a for-cause audit at Site 130, it was discovered that a non-critical lab sample collection window deviation for Subject 130-9030 was never logged in the site's deviation tracking system, despite the deviation itself carrying no safety impact.",
     "expected_category": "unreported",
     "is_boundary_case": true
+  },
+  {
+    "case_id": "EVAL-031",
+    "protocol_id": "EVL-2024-140",
+    "site_id": "140",
+    "subject_id": "140-9031",
+    "deviation_date": "2024-08-01",
+    "discovery_date": "2024-08-01",
+    "text": "Subject 140-9031 took their scheduled dose of Study Drug RN-88 approximately 3 hours later than the protocol-specified administration time, due to a scheduling mix-up at the site's dosing clinic. No clinical impact was noted.",
+    "expected_category": "minor",
+    "is_boundary_case": false,
+    "expected_evidence": {"pattern_detected": false}
+  },
+  {
+    "case_id": "EVAL-032",
+    "protocol_id": "EVL-2024-140",
+    "site_id": "140",
+    "subject_id": "140-9032",
+    "deviation_date": "2024-08-08",
+    "discovery_date": "2024-08-08",
+    "text": "Subject 140-9032 took their scheduled dose of Study Drug RN-88 approximately 3 hours later than the protocol-specified administration time, due to a scheduling mix-up at the site's dosing clinic. No clinical impact was noted.",
+    "expected_category": "minor",
+    "is_boundary_case": true,
+    "expected_evidence": {"pattern_detected": true}
+  },
+  {
+    "case_id": "EVAL-033",
+    "protocol_id": "EVL-2024-140",
+    "site_id": "140",
+    "subject_id": "140-9033",
+    "deviation_date": "2024-08-15",
+    "discovery_date": "2024-08-15",
+    "text": "Subject 140-9033 took their scheduled dose of Study Drug RN-88 approximately 3 hours later than the protocol-specified administration time, due to a scheduling mix-up at the site's dosing clinic. No clinical impact was noted.",
+    "expected_category": "minor",
+    "is_boundary_case": true,
+    "expected_evidence": {"pattern_detected": true}
   }
 ]
