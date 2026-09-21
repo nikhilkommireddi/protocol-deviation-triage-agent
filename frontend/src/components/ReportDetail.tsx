@@ -4,6 +4,7 @@ import { getReport, reviewReport } from "../api";
 import type { Memo, ReviewDecision, TriageResult } from "../types";
 import { categoryBadgeClass, statusBadgeClass } from "../lib/badges";
 import { generateReportPdf } from "../lib/pdfReport";
+import { ReasoningTrace } from "./ReasoningTrace";
 
 interface ReportDetailProps {
   reportId: string;
@@ -150,6 +151,8 @@ export function ReportDetail({ reportId, onReviewed }: ReportDetailProps) {
           </div>
         </details>
       )}
+
+      <ReasoningTrace result={record} />
 
       {record.memo ? (
         <div className="space-y-4 border-t border-slate-200 pt-4">

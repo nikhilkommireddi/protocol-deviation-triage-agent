@@ -147,6 +147,78 @@ class TestGraphNodes(unittest.TestCase):
         record = db.get_report(ingested["report_id"])
         self.assertEqual(record["history_findings"], fake_findings)
 
+    @patch("app.graph.plan_investigation")
+    def test_supervisor_node(self, mock_plan):
+        fake_plan = {
+            "run_protocol_investigation": False,
+            "run_site_history": True,
+            "reasoning": "No consent/visit/eligibility language present.",
+        }
+        mock_plan.return_value = fake_plan
+        ingested = self._ingest()
+        state = {"report_id": ingested["report_id"], "text": ingested["text"]}
+
+        result = graph.supervisor_node(state)
+
+        self.assertEqual(result["supervisor_plan"], fake_plan)
+        record = db.get_report(ingested["report_id"])
+        self.assertEqual(record["supervisor_plan"], fake_plan)
+
+    @patch("app.graph.investigate_protocol")
+    def test_protocol_investigate_node_skipped_by_supervisor(self, mock_investigate):
+        ingested = self._ingest()
+        state = {
+            "report_id": ingested["report_id"],
+            "text": ingested["text"],
+            "protocol_id": "PDA-2024-001",
+            "deviation_date": "2024-05-01",
+            "supervisor_plan": {"run_protocol_investigation": False, "run_site_history": True, "reasoning": "n/a"},
+        }
+
+        result = graph.protocol_investigate_node(state)
+
+        mock_investigate.assert_not_called()
+        self.assertFalse(result["protocol_findings"]["relevant"])
+        self.assertIn("Skipped by the Supervisor Agent", result["protocol_findings"]["summary"])
+
+    @patch("app.graph.investigate_history")
+    def test_site_history_node_skipped_by_supervisor(self, mock_investigate):
+        ingested = self._ingest()
+        state = {
+            "report_id": ingested["report_id"],
+            "text": ingested["text"],
+            "protocol_id": "PDA-2024-001",
+            "site_id": "001",
+            "supervisor_plan": {"run_protocol_investigation": True, "run_site_history": False, "reasoning": "n/a"},
+        }
+
+        result = graph.site_history_node(state)
+
+        mock_investigate.assert_not_called()
+        self.assertIn("Skipped by the Supervisor Agent", result["history_findings"]["summary"])
+
+    @patch("app.graph.investigate_protocol")
+    def test_protocol_investigate_node_defaults_to_run_when_no_plan(self, mock_investigate):
+        # No supervisor_plan key at all (e.g. an older/partial state) should
+        # fail open to running the investigation, not silently skip it.
+        mock_investigate.return_value = {
+            "relevant": False,
+            "summary": "n/a",
+            "citation": "",
+            "material_safety_change": False,
+        }
+        ingested = self._ingest()
+        state = {
+            "report_id": ingested["report_id"],
+            "text": ingested["text"],
+            "protocol_id": "PDA-2024-001",
+            "deviation_date": "2024-05-01",
+        }
+
+        graph.protocol_investigate_node(state)
+
+        mock_investigate.assert_called_once()
+
     @patch("app.graph.adjudicate")
     def test_adjudicate_node_first_pass(self, mock_adjudicate):
         mock_adjudicate.return_value = {
@@ -236,11 +308,24 @@ class TestGraphNodes(unittest.TestCase):
     @patch("app.graph.adjudicate")
     @patch("app.graph.investigate_history")
     @patch("app.graph.investigate_protocol")
+    @patch("app.graph.plan_investigation")
     @patch("app.graph.predict_category")
     def test_full_graph_end_to_end(
-        self, mock_predict, mock_investigate_protocol, mock_investigate_history, mock_adjudicate, mock_draft, mock_verify
+        self,
+        mock_predict,
+        mock_plan,
+        mock_investigate_protocol,
+        mock_investigate_history,
+        mock_adjudicate,
+        mock_draft,
+        mock_verify,
     ):
         mock_predict.return_value = ("technical", 0.88)
+        mock_plan.return_value = {
+            "run_protocol_investigation": True,
+            "run_site_history": True,
+            "reasoning": "No reason to skip either investigation.",
+        }
         mock_investigate_protocol.return_value = {
             "relevant": False,
             "summary": "No relevant protocol facts.",
@@ -286,6 +371,7 @@ class TestGraphNodes(unittest.TestCase):
         self.assertIn("memo", final_state)
         self.assertIn("adjudication", final_state)
         self.assertIn("verification", final_state)
+        self.assertIn("supervisor_plan", final_state)
 
         record = db.get_report(final_state["report_id"])
         self.assertEqual(record["status"], "queued")
@@ -300,11 +386,24 @@ class TestGraphNodes(unittest.TestCase):
     @patch("app.graph.adjudicate")
     @patch("app.graph.investigate_history")
     @patch("app.graph.investigate_protocol")
+    @patch("app.graph.plan_investigation")
     @patch("app.graph.predict_category")
     def test_full_graph_retries_once_on_verification_failure(
-        self, mock_predict, mock_investigate_protocol, mock_investigate_history, mock_adjudicate, mock_draft, mock_verify
+        self,
+        mock_predict,
+        mock_plan,
+        mock_investigate_protocol,
+        mock_investigate_history,
+        mock_adjudicate,
+        mock_draft,
+        mock_verify,
     ):
         mock_predict.return_value = ("administrative", 0.6)
+        mock_plan.return_value = {
+            "run_protocol_investigation": True,
+            "run_site_history": True,
+            "reasoning": "Consent form version mentioned -- protocol investigation is relevant.",
+        }
         mock_investigate_protocol.return_value = {
             "relevant": True,
             "summary": "Consent v4.0 withheld material safety info.",
@@ -405,6 +504,16 @@ class TestRetryAndFailureHandling(unittest.TestCase):
         state = {"report_id": "r1", "text": "text"}
         with self.assertRaises(graph.TriageAgentError):
             graph.classify_node(state)
+
+    @patch("app.graph.plan_investigation")
+    def test_supervisor_node_fails_open_to_run_everything(self, mock_plan):
+        mock_plan.side_effect = _fake_connection_error()
+        state = {"report_id": "r1", "text": "text"}
+
+        result = graph.supervisor_node(state)
+
+        self.assertTrue(result["supervisor_plan"]["run_protocol_investigation"])
+        self.assertTrue(result["supervisor_plan"]["run_site_history"])
 
     @patch("app.graph.investigate_protocol")
     def test_protocol_investigate_node_degrades_gracefully(self, mock_investigate):

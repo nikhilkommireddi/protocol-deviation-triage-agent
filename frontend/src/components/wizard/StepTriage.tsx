@@ -2,18 +2,21 @@ import { useEffect, useRef, useState } from "react";
 import {
   AlertTriangle,
   CheckCircle2,
+  ClipboardCheck,
+  Compass,
   Download,
   FileSearch,
   FileText,
+  Gavel,
   Lightbulb,
   Loader2,
   RotateCcw,
   ShieldAlert,
-  Users,
 } from "lucide-react";
 import { submitReport } from "../../api";
 import { categoryBadgeClass } from "../../lib/badges";
 import { generateReportPdf } from "../../lib/pdfReport";
+import { ReasoningTrace } from "../ReasoningTrace";
 import type { TriageResult } from "../../types";
 import type { WizardFields } from "./SubmitWizard";
 
@@ -24,19 +27,24 @@ interface StepTriageProps {
 }
 
 // Purely a UI affordance -- the real work happens in the single submitReport
-// call below. The pipeline (app/graph.py) is a synchronous blocking call
-// with no incremental progress hooks, so this steps through a plausible
-// sequence on a timer while that request is in flight, then reconciles
-// with the real result whichever finishes last.
+// call below. The pipeline (app/graph.py) now runs 6 sequential agents
+// (classifier, protocol investigator, site history, adjudication, memo
+// drafting, verification) with no incremental progress hooks, so this
+// steps through the real agent sequence on a timer while that request is
+// in flight, then reconciles with the real result whichever finishes last.
+// Tuned against real eval latency (median ~25s, max ~45s) so it spends
+// most of its time actually progressing rather than parked on one item.
 const CHECKLIST = [
-  { label: "Analyzing deviation details...", icon: FileSearch },
-  { label: "Classifying severity...", icon: AlertTriangle },
-  { label: "Determining protocol impact...", icon: ShieldAlert },
-  { label: "Routing to team...", icon: Users },
-  { label: "Generating CAPA memo...", icon: FileText },
+  { label: "Classifying deviation severity...", icon: AlertTriangle },
+  { label: "Planning investigation...", icon: Compass },
+  { label: "Investigating protocol details...", icon: FileSearch },
+  { label: "Reviewing site history...", icon: ShieldAlert },
+  { label: "Adjudicating final category...", icon: Gavel },
+  { label: "Drafting review memo...", icon: FileText },
+  { label: "Verifying findings...", icon: ClipboardCheck },
 ];
 
-const STEP_INTERVAL_MS = 1000;
+const STEP_INTERVAL_MS = 3200;
 
 const WORKFLOW_STEPS = ["Submitted", "Classified", "CAPA Lookup", "Memo Drafted", "Queued for Review"];
 
@@ -136,7 +144,9 @@ export function StepTriage({ fields, onSubmitted, onStartOver }: StepTriageProps
 
         <div className="card flex items-center gap-2 bg-slate-50 justify-center">
           <Lightbulb className="w-4 h-4 text-amber-500 shrink-0" />
-          <p className="text-xs text-slate-500">This usually takes 10-30 seconds.</p>
+          <p className="text-xs text-slate-500">
+            This usually takes 20-45 seconds -- six specialized agents review this case in sequence.
+          </p>
         </div>
       </div>
     );
@@ -175,6 +185,8 @@ export function StepTriage({ fields, onSubmitted, onStartOver }: StepTriageProps
           {requiresExpedited ? "Expedited reporting required" : "Standard CAPA timeline"}
         </span>
       </div>
+
+      <ReasoningTrace result={result} />
 
       <div className="card">
         <h3 className="font-medium text-slate-800 mb-4">Workflow</h3>

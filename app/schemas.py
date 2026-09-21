@@ -33,6 +33,7 @@ class TriageResult(BaseModel):
     text: str
     category: str | None = None
     confidence: float | None = None
+    supervisor_plan: dict | None = None
     protocol_findings: dict | None = None
     history_findings: dict | None = None
     adjudication: dict | None = None

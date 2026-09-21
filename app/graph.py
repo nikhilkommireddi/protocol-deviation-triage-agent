@@ -1,25 +1,31 @@
-"""LangGraph triage workflow: ingest -> classify -> protocol_investigate ->
-site_history -> adjudicate -> capa_lookup -> memo_draft -> verify -> (loop
-back to adjudicate once on a flagged issue, else) mock_queue.
+"""LangGraph triage workflow: ingest -> classify -> supervisor ->
+protocol_investigate -> site_history -> adjudicate -> capa_lookup ->
+memo_draft -> verify -> (loop back to adjudicate once on a flagged issue,
+else) mock_queue.
 
 Multiple specialized agents rather than one node doing everything: the
-Classifier Agent (fine-tuned DeBERTa) gives a fast first-pass category: the
-Protocol Investigator Agent and Site History Agent independently gather
-evidence a text classifier can't see (what the protocol actually says, what
-happened before at this site); the Adjudication Agent makes the final call,
-confirming or explicitly overriding the classifier with a cited reason; the
-Verification Agent checks that call and the drafted memo against the
-evidence actually gathered before it's allowed to queue.
+Classifier Agent (fine-tuned DeBERTa) gives a fast first-pass category; the
+Supervisor Agent decides which of the two investigative agents are worth
+running for this specific deviation (failing open to "run everything" if
+it can't decide); the Protocol Investigator Agent and Site History Agent
+independently gather evidence a text classifier can't see (what the
+protocol actually says, what happened before at this site); the
+Adjudication Agent makes the final call, confirming or explicitly
+overriding the classifier with a cited reason; the Verification Agent
+checks that call and the drafted memo against the evidence actually
+gathered before it's allowed to queue.
 
 Each node's external call (model inference, Claude API) is wrapped in a
-small standalone function (predict_category, investigate_protocol,
-investigate_history, adjudicate, draft_memo, verify, deliver_to_queue) so
-tests can mock just that call rather than the whole node.
+small standalone function (predict_category, plan_investigation,
+investigate_protocol, investigate_history, adjudicate, draft_memo, verify,
+deliver_to_queue) so tests can mock just that call rather than the whole
+node.
 """
 
 from __future__ import annotations
 
 import json
+import logging
 import time
 import uuid
 from pathlib import Path
@@ -33,6 +39,8 @@ from langgraph.graph import END, START, StateGraph
 from app import db, protocol_lookup
 
 load_dotenv()  # picks up ANTHROPIC_API_KEY from a local .env, if present
+
+logger = logging.getLogger(__name__)
 
 RETRYABLE_ERRORS = (
     anthropic.APIConnectionError,
@@ -51,19 +59,41 @@ class TriageAgentError(Exception):
     couldn't complete this triage right now, which is different from a bug."""
 
 
+def _client() -> anthropic.Anthropic:
+    # max_retries=0 disables the SDK's own hidden retry/backoff layer, which
+    # on a 429 waits however long the server's Retry-After header says --
+    # observed once taking 26 minutes on a single call, completely silently.
+    # _call_with_retries below is our one explicit, logged, bounded retry
+    # layer; stacking the SDK's hidden one underneath it turns a visible,
+    # predictable-worst-case retry into an invisible, unbounded-feeling one.
+    return anthropic.Anthropic(max_retries=0)
+
+
 def _call_with_retries(fn, *args, max_attempts: int = 3, base_delay: float = 1.0, **kwargs):
+    fn_name = getattr(fn, "__name__", repr(fn))
     for attempt in range(max_attempts):
         try:
             return fn(*args, **kwargs)
-        except RETRYABLE_ERRORS:
+        except RETRYABLE_ERRORS as exc:
             if attempt == max_attempts - 1:
+                logger.warning("%s failed after %d attempts, giving up: %s", fn_name, max_attempts, exc)
                 raise
-            time.sleep(base_delay * (2**attempt))
+            delay = base_delay * (2**attempt)
+            logger.warning(
+                "%s failed (attempt %d/%d): %s -- retrying in %.1fs",
+                fn_name,
+                attempt + 1,
+                max_attempts,
+                exc,
+                delay,
+            )
+            time.sleep(delay)
 
 MODEL_DIR = Path("models/deviation-classifier")
 CAPA_GUIDANCE_PATH = Path("data/capa_guidance.json")
 LABELS_PATH = Path("data/labels.md")
 MEMO_MODEL = "claude-sonnet-5"
+SUPERVISOR_MODEL = "claude-sonnet-5"
 INVESTIGATOR_MODEL = "claude-sonnet-5"
 HISTORY_MODEL = "claude-sonnet-5"
 ADJUDICATION_MODEL = "claude-sonnet-5"
@@ -87,6 +117,7 @@ class TriageState(TypedDict, total=False):
     text: str
     category: str
     confidence: float
+    supervisor_plan: dict
     protocol_findings: dict
     history_findings: dict
     adjudication: dict
@@ -122,6 +153,69 @@ def predict_category(text: str) -> tuple[str, float]:
     category = model.config.id2label[pred_id]
     confidence = float(probs[pred_id].item())
     return category, confidence
+
+
+# --- Supervisor Agent --------------------------------------------------------
+#
+# Orchestrates the two *investigative* agents (Protocol Investigator, Site
+# History) -- deciding which are actually worth running for a given
+# deviation, not whether they run at all. Classification, adjudication,
+# memo drafting, and verification stay mandatory; skipping those isn't a
+# cost optimization, it's a missing decision. Fails open: if the supervisor
+# itself can't produce a plan, the default is to run everything rather than
+# risk skipping an investigation a case actually needed.
+
+SUPERVISOR_PLAN_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "run_protocol_investigation": {
+            "type": "boolean",
+            "description": "True if this deviation plausibly involves protocol-specific facts "
+            "(consent version, visit window, eligibility criteria) worth looking up.",
+        },
+        "run_site_history": {
+            "type": "boolean",
+            "description": "True if checking this site's prior deviation history is worth doing for this case.",
+        },
+        "reasoning": {"type": "string"},
+    },
+    "required": ["run_protocol_investigation", "run_site_history", "reasoning"],
+    "additionalProperties": False,
+}
+
+SUPERVISOR_SYSTEM_PROMPT = (
+    "You are the orchestrator for a protocol deviation triage pipeline. Given a deviation "
+    "report, decide which specialist investigations are actually worth running: protocol "
+    "investigation (consent version, visit window, eligibility facts) and site history "
+    "(prior deviations at this site). Skip an investigation only when it plainly has no "
+    "bearing on this deviation. When genuinely unsure, run it -- skipping is a cost/latency "
+    "optimization, never a corner to cut on a case that might need it. Any mention of "
+    "consent forms, informed consent versions, visit timing, eligibility, or protocol "
+    "amendments means protocol investigation is relevant."
+)
+
+RUN_EVERYTHING_PLAN = {
+    "run_protocol_investigation": True,
+    "run_site_history": True,
+    "reasoning": "Supervisor planning was unavailable; defaulting to running every "
+    "investigation rather than risk skipping one that matters.",
+}
+
+
+def plan_investigation(text: str) -> dict:
+    client = _client()
+    response = client.messages.create(
+        model=SUPERVISOR_MODEL,
+        max_tokens=512,
+        system=SUPERVISOR_SYSTEM_PROMPT,
+        output_config={
+            "effort": "low",
+            "format": {"type": "json_schema", "schema": SUPERVISOR_PLAN_SCHEMA},
+        },
+        messages=[{"role": "user", "content": f"Deviation report:\n{text}"}],
+    )
+    text_block = next(b.text for b in response.content if b.type == "text")
+    return json.loads(text_block)
 
 
 # --- Protocol Investigator Agent -------------------------------------------
@@ -226,7 +320,7 @@ NO_FINDINGS = {
 
 
 def investigate_protocol(text: str, protocol_id: str, deviation_date: str) -> dict:
-    client = anthropic.Anthropic()
+    client = _client()
     messages = [
         {
             "role": "user",
@@ -297,7 +391,7 @@ def investigate_history(text: str, site_id: str, prior_reports: list[dict]) -> d
             "summary": "No prior deviations on file for this site.",
         }
 
-    client = anthropic.Anthropic()
+    client = _client()
     prior_summaries = "\n".join(
         f"- {r['deviation_date']} ({r.get('category') or 'unclassified'}): {r['text']}"
         for r in prior_reports
@@ -368,7 +462,7 @@ def adjudicate(
     label_definitions: str,
     verification_feedback: str | None = None,
 ) -> dict:
-    client = anthropic.Anthropic()
+    client = _client()
     user_prompt = (
         f"Deviation text:\n{text}\n\n"
         f"Classifier's prediction: {classifier_category} (confidence {classifier_confidence:.2f})\n\n"
@@ -445,7 +539,7 @@ def draft_memo(
     protocol_findings: dict | None = None,
     history_findings: dict | None = None,
 ) -> dict:
-    client = anthropic.Anthropic()
+    client = _client()
     user_prompt = (
         f"Deviation report (category: {category}):\n{text}\n\n"
         f"CAPA guidance for this category:\n{json.dumps(capa_guidance, indent=2)}\n\n"
@@ -494,7 +588,7 @@ VERIFICATION_SYSTEM_PROMPT = (
 
 
 def verify(adjudication: dict, memo: dict, protocol_findings: dict, history_findings: dict) -> dict:
-    client = anthropic.Anthropic()
+    client = _client()
     user_prompt = (
         f"Adjudication:\n{json.dumps(adjudication, indent=2)}\n\n"
         f"Drafted memo:\n{json.dumps(memo, indent=2)}\n\n"
@@ -550,10 +644,27 @@ def classify_node(state: TriageState) -> dict:
     return {"category": category, "confidence": confidence, "status": "classified"}
 
 
+def supervisor_node(state: TriageState) -> dict:
+    try:
+        plan = _call_with_retries(plan_investigation, state["text"])
+    except RETRYABLE_ERRORS:
+        plan = dict(RUN_EVERYTHING_PLAN)
+    db.update_report(state["report_id"], {"supervisor_plan": plan, "status": "planned"})
+    return {"supervisor_plan": plan, "status": "planned"}
+
+
 PROTOCOL_INVESTIGATION_UNAVAILABLE = {
     "relevant": False,
     "summary": "Protocol investigation could not be completed after repeated failures; "
     "proceeding without it. A human reviewer should check protocol-specific facts manually.",
+    "citation": "",
+    "material_safety_change": False,
+}
+
+PROTOCOL_INVESTIGATION_SKIPPED = {
+    "relevant": False,
+    "summary": "Skipped by the Supervisor Agent -- this deviation was judged unlikely to "
+    "involve protocol-specific facts.",
     "citation": "",
     "material_safety_change": False,
 }
@@ -565,8 +676,20 @@ HISTORY_INVESTIGATION_UNAVAILABLE = {
     "proceeding without it. A human reviewer should check for prior similar deviations manually.",
 }
 
+HISTORY_INVESTIGATION_SKIPPED = {
+    "prior_count": -1,
+    "pattern_detected": False,
+    "summary": "Skipped by the Supervisor Agent for this deviation.",
+}
+
 
 def protocol_investigate_node(state: TriageState) -> dict:
+    plan = state.get("supervisor_plan") or RUN_EVERYTHING_PLAN
+    if not plan.get("run_protocol_investigation", True):
+        findings = dict(PROTOCOL_INVESTIGATION_SKIPPED)
+        db.update_report(state["report_id"], {"protocol_findings": findings, "status": "protocol_reviewed"})
+        return {"protocol_findings": findings, "status": "protocol_reviewed"}
+
     # Advisory, not authoritative -- if this keeps failing after retries, degrade
     # gracefully rather than blocking the whole triage on a helper agent.
     try:
@@ -580,6 +703,12 @@ def protocol_investigate_node(state: TriageState) -> dict:
 
 
 def site_history_node(state: TriageState) -> dict:
+    plan = state.get("supervisor_plan") or RUN_EVERYTHING_PLAN
+    if not plan.get("run_site_history", True):
+        findings = dict(HISTORY_INVESTIGATION_SKIPPED)
+        db.update_report(state["report_id"], {"history_findings": findings, "status": "history_reviewed"})
+        return {"history_findings": findings, "status": "history_reviewed"}
+
     prior_reports = db.list_reports_by_site(
         state["protocol_id"], state["site_id"], exclude_report_id=state["report_id"]
     )
@@ -689,6 +818,7 @@ def build_graph():
     builder = StateGraph(TriageState)
     builder.add_node("ingest", ingest_node)
     builder.add_node("classify", classify_node)
+    builder.add_node("supervisor", supervisor_node)
     builder.add_node("protocol_investigate", protocol_investigate_node)
     builder.add_node("site_history", site_history_node)
     builder.add_node("adjudicate", adjudicate_node)
@@ -699,7 +829,8 @@ def build_graph():
 
     builder.add_edge(START, "ingest")
     builder.add_edge("ingest", "classify")
-    builder.add_edge("classify", "protocol_investigate")
+    builder.add_edge("classify", "supervisor")
+    builder.add_edge("supervisor", "protocol_investigate")
     builder.add_edge("protocol_investigate", "site_history")
     builder.add_edge("site_history", "adjudicate")
     builder.add_edge("adjudicate", "capa_lookup")

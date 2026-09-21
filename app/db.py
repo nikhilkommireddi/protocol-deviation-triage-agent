@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS triage_records (
     text TEXT NOT NULL,
     category TEXT,
     confidence REAL,
+    supervisor_plan TEXT,
     protocol_findings TEXT,
     history_findings TEXT,
     adjudication TEXT,
@@ -107,7 +108,15 @@ def update_report(report_id: str, fields: dict, db_path: Path | str | None = Non
 
 def _row_to_dict(row: sqlite3.Row) -> dict:
     d = dict(row)
-    for key in ("protocol_findings", "history_findings", "adjudication", "capa_guidance", "memo", "verification"):
+    for key in (
+        "supervisor_plan",
+        "protocol_findings",
+        "history_findings",
+        "adjudication",
+        "capa_guidance",
+        "memo",
+        "verification",
+    ):
         if d.get(key):
             d[key] = json.loads(d[key])
     return d

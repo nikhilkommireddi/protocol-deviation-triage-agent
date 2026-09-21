@@ -1,38 +1,90 @@
 # protocol-deviation-triage-agent
 
-An AI-assisted triage pipeline for clinical trial protocol deviation reports:
-classify a deviation into one of 5 categories, look up the relevant CAPA
-guidance, and draft a review memo for human approval.
+An AI-assisted triage pipeline for clinical trial protocol deviation reports.
+A fast fine-tuned classifier gives a first-pass category, then a chain of
+specialized Claude agents independently investigate the trial's actual
+protocol facts and the site's deviation history, adjudicate a final category
+(confirming or explicitly overriding the classifier with a cited reason),
+draft a CAPA review memo, and verify that memo against the evidence
+gathered — all before a human ever reviews it.
 
 ## Stack
 
 - Python, FastAPI (`app/`) — backend API
 - React + TypeScript + Vite, Tailwind CSS (`frontend/`) — review UI
 - Hugging Face Transformers / PyTorch — fine-tuned DeBERTa-v3-base classifier
-- LangGraph — workflow orchestration (`app/graph.py`)
-- Anthropic API / Claude Sonnet 5 — memo drafting node
+- LangGraph — multi-agent workflow orchestration (`app/graph.py`)
+- Anthropic API / Claude Sonnet 5 — five specialized agents (protocol
+  investigation, site history, adjudication, memo drafting, verification)
 - SQLite — triage state (`app/db.py`)
+
+## Multi-agent pipeline
+
+`app/graph.py` runs 8 nodes in a fixed sequence (not a dynamic supervisor —
+see the architecture doc referenced below for why): `ingest -> classify ->
+protocol_investigate -> site_history -> adjudicate -> capa_lookup ->
+memo_draft -> verify`, with one conditional edge: a failed verification
+routes back to `adjudicate` once (bounded retry) before proceeding regardless.
+
+- **Classifier Agent** (`predict_category`) — the fine-tuned DeBERTa model,
+  a fast first-pass category + confidence. Kept as an input signal, not
+  replaced by the agents below.
+- **Protocol Investigator Agent** (`investigate_protocol`) — a real Claude
+  tool-use loop against `app/protocol_lookup.py`'s deterministic lookups
+  over `data/protocols/<protocol_id>.json` (consent version history, visit
+  windows, eligibility criteria). Decides for itself what's relevant to a
+  given deviation rather than following a fixed lookup sequence.
+- **Site History Agent** (`investigate_history`) — reviews prior deviations
+  at the same site (`db.list_reports_by_site`) for a recurring root-cause
+  pattern, not just isolated events.
+- **Adjudication Agent** (`adjudicate`) — the actual decision-maker: confirms
+  or explicitly overrides the classifier's category with a cited reason,
+  given the investigator and history findings plus `data/labels.md`'s
+  boundary definitions.
+- **Memo Drafting Agent** (`draft_memo`) — same CAPA memo as before, now
+  informed by the adjudication reasoning and any relevant findings.
+- **Verification Agent** (`verify`) — checks the adjudication and memo
+  against the evidence actually gathered before the report is allowed to
+  queue.
+
+**Retry and failure handling**: every Claude call goes through
+`_call_with_retries` (backoff on transient API errors and malformed
+structured output). Critical agents (classifier, adjudication, memo draft,
+verification) raise `TriageAgentError` after exhausting retries, which
+`app/main.py` turns into an HTTP 502 rather than an opaque crash. Advisory
+agents (protocol investigator, site history) degrade gracefully to a
+labeled "unavailable" finding instead of blocking the whole triage.
 
 ## Repo layout
 
 - `app/` — FastAPI backend: `main.py` (HTTP endpoints), `graph.py` (the
-  5-node LangGraph triage workflow), `db.py` (SQLite persistence),
+  multi-agent LangGraph workflow, see above), `protocol_lookup.py`
+  (deterministic protocol-document lookups), `db.py` (SQLite persistence),
   `schemas.py` (Pydantic request/response models).
-- `frontend/` — React + TypeScript UI (submit a deviation, review/approve
-  drafted memos). Hand-built components styled with Tailwind utility
-  classes — no component library, consistent with the rest of the project's
+- `frontend/` — React + TypeScript UI: a 3-step submit wizard, a Review
+  Queue dashboard, and an Analytics page. `ReasoningTrace.tsx` renders the
+  agent pipeline's findings (protocol/history investigation, adjudication,
+  verification) for a human reviewer. Hand-built components styled with
+  Tailwind utility classes, plus `lucide-react` for icons — no full UI
+  component library, consistent with the rest of the project's
   minimal-dependency approach.
 - `data/raw/` — generated-but-unsplit datasets (JSONL, one record per line).
 - `data/processed/` — labeled, train/val/test-split datasets (CSV), ready
   for fine-tuning.
 - `data/labels.md` — canonical label-schema definitions and boundary notes.
   Anything that needs a category definition (generators, classifier,
-  CAPA lookup) should trace back to this file, not redefine it.
+  CAPA lookup, the Adjudication Agent) should trace back to this file, not
+  redefine it.
 - `data/capa_guidance.json` — category → routing team, regulatory
   reference, required CAPA elements. Read by `app/graph.py`'s CAPA-lookup
   node and referenced by the memo-draft prompt.
-- `data/eval_cases.json` — 30 hand-authored end-to-end evaluation cases
-  (see `scripts/run_eval.py`).
+- `data/protocols/<protocol_id>.json` — structured protocol documents
+  (consent version history, visit schedule, eligibility criteria), written
+  by us rather than sourced externally so eval cases have a verifiable
+  ground truth. Read by `app/protocol_lookup.py`.
+- `data/eval_cases.json` — 33 hand-authored end-to-end evaluation cases
+  (see `scripts/run_eval.py`); some carry an `expected_evidence` field
+  checked against the agents' actual findings, not just the final category.
 - `scripts/` — data generation, training, and evaluation scripts (see below).
 - `models/` — trained model artifacts (gitignored; too large for git).
 - `tests/` — unit tests, run with `python -m unittest`.
@@ -79,10 +131,13 @@ training data.
   and the "Fix training collapse" commit for the full diagnosis). Saves to
   `models/deviation-classifier/` (gitignored) plus a `training_results.json`
   alongside it.
-- `scripts/run_eval.py` — runs the 30 cases in `data/eval_cases.json`
-  through the real end-to-end pipeline (real classifier, real Claude memo
-  draft) and reports classification accuracy, a memo-completeness rubric,
-  and latency. Writes `eval_results.json` and `eval_report.md`.
+- `scripts/run_eval.py` — runs the 33 cases in `data/eval_cases.json`
+  through the real end-to-end multi-agent pipeline and reports
+  classification accuracy, a memo-completeness rubric, evidence-grounding
+  (did the agents actually cite the fact a case's category depends on, not
+  just land on the right answer by chance), and latency. Writes
+  `eval_results.json` and `eval_report.md`. Current: 100% classification
+  accuracy, 5/5 evidence-grounding checks correct.
 
 ## Setup
 
@@ -100,12 +155,12 @@ npm install
 ```
 
 Set `ANTHROPIC_API_KEY` before running anything that calls Claude
-(`generate_reports.py`, the LangGraph memo-draft node, `run_eval.py`).
-Either export it in your shell, or copy `.env.example` to `.env` and fill
-in your key — `app/graph.py` and `generate_reports.py` both call
-`load_dotenv()` on import, so a project-local `.env` is picked up
-automatically. `.env` is gitignored; never commit a key or put one
-directly in a script.
+(`generate_reports.py`, any of `app/graph.py`'s five Claude agents,
+`app/pdf_extract.py`, `run_eval.py`). Either export it in your shell, or
+copy `.env.example` to `.env` and fill in your key — `app/graph.py` and
+`generate_reports.py` both call `load_dotenv()` on import, so a
+project-local `.env` is picked up automatically. `.env` is gitignored;
+never commit a key or put one directly in a script.
 
 ## Running it
 

@@ -22,6 +22,38 @@ export interface CapaGuidance {
   required_capa_elements: string[];
 }
 
+export interface SupervisorPlan {
+  run_protocol_investigation: boolean;
+  run_site_history: boolean;
+  reasoning: string;
+}
+
+export interface ProtocolFindings {
+  relevant: boolean;
+  summary: string;
+  citation: string;
+  material_safety_change: boolean;
+}
+
+export interface HistoryFindings {
+  prior_count: number;
+  pattern_detected: boolean;
+  summary: string;
+}
+
+export interface Adjudication {
+  final_category: string;
+  confidence: number;
+  overridden: boolean;
+  override_reason: string;
+  classifier_category: string;
+}
+
+export interface Verification {
+  passes: boolean;
+  issues: string[];
+}
+
 export interface Memo {
   summary: string;
   root_cause_narrative: string;
@@ -43,8 +75,13 @@ export interface TriageResult {
   text: string;
   category: string | null;
   confidence: number | null;
+  supervisor_plan: SupervisorPlan | null;
+  protocol_findings: ProtocolFindings | null;
+  history_findings: HistoryFindings | null;
+  adjudication: Adjudication | null;
   capa_guidance: CapaGuidance | null;
   memo: Memo | null;
+  verification: Verification | null;
   status: string;
   created_at: string;
   updated_at: string;

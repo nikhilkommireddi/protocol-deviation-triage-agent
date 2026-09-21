@@ -1,10 +1,10 @@
 # Phase 6 Evaluation Report
 
-**Cases:** 33 (22 clear-cut, 11 boundary)
+**Cases:** 33 (21 clear-cut, 12 boundary)
 
 ## Classification accuracy
-- Overall: 100.0%
-- Clear-cut cases: 100.0%
+- Overall: 97.0%
+- Clear-cut cases: 95.2%
 - Boundary cases: 100.0%
 
 ## Memo completeness (rubric)
@@ -18,13 +18,12 @@
 
 ## Evidence grounding (agentic pipeline)
 - Cases with a checkable expected_evidence field: 5
-- Correct evidence found: 4/5
-  - EVAL-032: expected evidence not found/matched by the agent pipeline
+- Correct evidence found: 5/5
 
 ## Queue delivery latency
-- Mean: 27.52s
-- Median: 24.38s
-- Max: 45.22s
+- Mean: 91.00s
+- Median: 42.14s
+- Max: 1588.05s
 
 ## Misclassified cases
-- None
+- EVAL-013 (boundary=False): expected `technical`, predicted `major` (confidence 0.75)
