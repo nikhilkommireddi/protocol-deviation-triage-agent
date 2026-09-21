@@ -14,21 +14,29 @@ gathered — all before a human ever reviews it.
 - React + TypeScript + Vite, Tailwind CSS (`frontend/`) — review UI
 - Hugging Face Transformers / PyTorch — fine-tuned DeBERTa-v3-base classifier
 - LangGraph — multi-agent workflow orchestration (`app/graph.py`)
-- Anthropic API / Claude Sonnet 5 — five specialized agents (protocol
-  investigation, site history, adjudication, memo drafting, verification)
+- Anthropic API / Claude Sonnet 5 — six specialized agents (supervisor,
+  protocol investigation, site history, adjudication, memo drafting,
+  verification)
 - SQLite — triage state (`app/db.py`)
 
 ## Multi-agent pipeline
 
-`app/graph.py` runs 8 nodes in a fixed sequence (not a dynamic supervisor —
-see the architecture doc referenced below for why): `ingest -> classify ->
-protocol_investigate -> site_history -> adjudicate -> capa_lookup ->
-memo_draft -> verify`, with one conditional edge: a failed verification
-routes back to `adjudicate` once (bounded retry) before proceeding regardless.
+`app/graph.py` runs 10 nodes in a fixed sequence: `ingest -> classify ->
+supervisor -> protocol_investigate -> site_history -> adjudicate ->
+capa_lookup -> memo_draft -> verify`, with one conditional edge: a failed
+verification routes back to `adjudicate` once (bounded retry) before
+proceeding regardless.
 
 - **Classifier Agent** (`predict_category`) — the fine-tuned DeBERTa model,
   a fast first-pass category + confidence. Kept as an input signal, not
   replaced by the agents below.
+- **Supervisor Agent** (`plan_investigation`) — orchestrates the two
+  *investigative* agents below: decides whether Protocol Investigation
+  and/or Site History are actually worth running for this specific
+  deviation. Fails open to "run everything" if it can't produce a plan —
+  skipping is a cost/latency optimization, never a corner to cut. (The
+  other four agents stay mandatory; a supervisor only gates the two that
+  are genuinely optional per case.)
 - **Protocol Investigator Agent** (`investigate_protocol`) — a real Claude
   tool-use loop against `app/protocol_lookup.py`'s deterministic lookups
   over `data/protocols/<protocol_id>.json` (consent version history, visit
@@ -49,11 +57,16 @@ routes back to `adjudicate` once (bounded retry) before proceeding regardless.
 
 **Retry and failure handling**: every Claude call goes through
 `_call_with_retries` (backoff on transient API errors and malformed
-structured output). Critical agents (classifier, adjudication, memo draft,
-verification) raise `TriageAgentError` after exhausting retries, which
-`app/main.py` turns into an HTTP 502 rather than an opaque crash. Advisory
-agents (protocol investigator, site history) degrade gracefully to a
-labeled "unavailable" finding instead of blocking the whole triage.
+structured output), using a client built with `max_retries=0`
+(`app/graph.py`'s `_client()`) so the SDK's own hidden retry/backoff never
+stacks silently underneath ours — that combination once produced a single
+call that took 26 minutes with zero visibility. Critical agents (classifier,
+adjudication, memo draft, verification) raise `TriageAgentError` after
+exhausting retries, which `app/main.py` turns into an HTTP 502 rather than
+an opaque crash. Advisory agents (protocol investigator, site history)
+degrade gracefully to a labeled "unavailable" finding instead of blocking
+the whole triage; the supervisor gates them separately with a "skipped by
+supervisor" finding when it decides one isn't needed.
 
 ## Repo layout
 
