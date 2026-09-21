@@ -72,8 +72,13 @@ supervisor" finding when it decides one isn't needed.
 
 - `app/` — FastAPI backend: `main.py` (HTTP endpoints), `graph.py` (the
   multi-agent LangGraph workflow, see above), `protocol_lookup.py`
-  (deterministic protocol-document lookups), `db.py` (SQLite persistence),
-  `schemas.py` (Pydantic request/response models).
+  (deterministic protocol-document lookups), `protocol_extract.py`
+  (Protocol Ingestion Agent — extracts visit schedule/eligibility/consent
+  history from a real uploaded protocol PDF via `POST /protocols/extract-pdf`;
+  a separate `POST /protocols/{protocol_id}` saves the human-reviewed result
+  to `data/protocols/`), `pdf_extract.py` (same idea for deviation-report
+  PDFs), `db.py` (SQLite persistence), `schemas.py` (Pydantic
+  request/response models).
 - `frontend/` — React + TypeScript UI: a 3-step submit wizard, a Review
   Queue dashboard, and an Analytics page. `ReasoningTrace.tsx` renders the
   agent pipeline's findings (protocol/history investigation, adjudication,
@@ -92,9 +97,11 @@ supervisor" finding when it decides one isn't needed.
   reference, required CAPA elements. Read by `app/graph.py`'s CAPA-lookup
   node and referenced by the memo-draft prompt.
 - `data/protocols/<protocol_id>.json` — structured protocol documents
-  (consent version history, visit schedule, eligibility criteria), written
-  by us rather than sourced externally so eval cases have a verifiable
-  ground truth. Read by `app/protocol_lookup.py`.
+  (consent version history, visit schedule, eligibility criteria). The two
+  eval-referenced ones (`EVL-2024-106`, `EVL-2024-123`) are hand-authored so
+  eval cases have a verifiable ground truth; others (e.g. `ADX-102-UV-005`)
+  are built from real protocol PDFs via `app/protocol_extract.py`. Read by
+  `app/protocol_lookup.py`.
 - `data/eval_cases.json` — 33 hand-authored end-to-end evaluation cases
   (see `scripts/run_eval.py`); some carry an `expected_evidence` field
   checked against the agents' actual findings, not just the final category.
