@@ -15,6 +15,7 @@ export type Capability =
   | "correct.edit"
   | "analytics"
   | "safety"
+  | "sites"
   | "rules"
   | "subjects"
   | "admin";
@@ -36,13 +37,14 @@ export const CAPABILITY_LABELS: Record<Capability, string> = {
   "correct.edit": "Check off CAPA actions",
   analytics: "View Analytics",
   safety: "View Safety Tracker",
+  sites: "View Site History",
   rules: "View Rule Catalog",
   subjects: "View Subjects",
   admin: "View Administration",
 };
 
 export const ROLE_CAPABILITIES: Record<UserRole, Capability[]> = {
-  site_coordinator: ["dashboard", "intake", "review", "rules", "subjects"],
+  site_coordinator: ["dashboard", "intake", "review", "sites", "rules", "subjects"],
   cra: [
     "dashboard",
     "review",
@@ -50,6 +52,7 @@ export const ROLE_CAPABILITIES: Record<UserRole, Capability[]> = {
     "correct",
     "analytics",
     "safety",
+    "sites",
     "rules",
     "subjects",
   ],
@@ -62,10 +65,20 @@ export const ROLE_CAPABILITIES: Record<UserRole, Capability[]> = {
     "correct.edit",
     "analytics",
     "safety",
+    "sites",
     "rules",
     "subjects",
   ],
-  administrator: ["dashboard", "review", "correct", "analytics", "rules", "subjects", "admin"],
+  administrator: [
+    "dashboard",
+    "review",
+    "correct",
+    "analytics",
+    "sites",
+    "rules",
+    "subjects",
+    "admin",
+  ],
 };
 
 export function can(user: DemoUser | null, capability: Capability): boolean {

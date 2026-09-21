@@ -6,6 +6,7 @@ import { ReviewQueue } from "./components/ReviewQueue";
 import { Analytics } from "./components/Analytics";
 import { CorrectQueue } from "./components/CorrectQueue";
 import { SafetyTracker } from "./components/SafetyTracker";
+import { Sites } from "./components/Sites";
 import { RuleCatalog } from "./components/RuleCatalog";
 import { Subjects } from "./components/Subjects";
 import { Administration } from "./components/Administration";
@@ -38,6 +39,7 @@ function AppContent() {
         {view === "correct" && <CorrectQueue key={reviewQueueKey} />}
         {view === "analytics" && <Analytics />}
         {view === "safety" && <SafetyTracker />}
+        {view === "sites" && <Sites />}
         {view === "rules" && <RuleCatalog />}
         {view === "subjects" && <Subjects />}
         {view === "admin" && <Administration />}

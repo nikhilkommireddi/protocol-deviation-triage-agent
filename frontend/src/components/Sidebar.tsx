@@ -1,6 +1,7 @@
 import {
   BarChart3,
   BookOpen,
+  Building2,
   ClipboardList,
   Inbox,
   LayoutDashboard,
@@ -21,6 +22,7 @@ export type View =
   | "correct"
   | "analytics"
   | "safety"
+  | "sites"
   | "rules"
   | "subjects"
   | "admin";
@@ -81,7 +83,7 @@ export function Sidebar({ active, onNavigate }: SidebarProps) {
           />
         )}
 
-        {(can(user, "analytics") || can(user, "safety")) && (
+        {(can(user, "analytics") || can(user, "safety") || can(user, "sites")) && (
           <p className="sidebar-group-label">Oversight</p>
         )}
         {can(user, "analytics") && (
@@ -98,6 +100,14 @@ export function Sidebar({ active, onNavigate }: SidebarProps) {
             label="Safety Tracker"
             active={active === "safety"}
             onClick={() => onNavigate("safety")}
+          />
+        )}
+        {can(user, "sites") && (
+          <NavItem
+            icon={<Building2 className="w-4 h-4" />}
+            label="Sites"
+            active={active === "sites"}
+            onClick={() => onNavigate("sites")}
           />
         )}
 
