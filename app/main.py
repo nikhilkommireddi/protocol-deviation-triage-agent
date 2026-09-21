@@ -10,6 +10,7 @@ from app import db, protocol_lookup
 from app.graph import TriageAgentError, deliver_to_queue, graph
 from app.pdf_extract import extract_from_pdf
 from app.protocol_extract import extract_protocol_from_pdf, to_storage_format
+from app.retry import call_with_retries
 from app.schemas import (
     DeviationSubmission,
     ExtractedFields,
@@ -80,9 +81,11 @@ async def extract_pdf_fields(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="Uploaded file is empty.")
 
     try:
-        extracted = extract_from_pdf(pdf_bytes)
+        extracted = call_with_retries(extract_from_pdf, pdf_bytes)
     except Exception as exc:
-        raise HTTPException(status_code=502, detail=f"PDF extraction failed: {exc}") from exc
+        raise HTTPException(
+            status_code=502, detail=f"PDF extraction failed: {type(exc).__name__}: {exc}"
+        ) from exc
     return extracted
 
 
@@ -98,9 +101,11 @@ async def extract_protocol_pdf(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="Uploaded file is empty.")
 
     try:
-        extracted = extract_protocol_from_pdf(pdf_bytes)
+        extracted = call_with_retries(extract_protocol_from_pdf, pdf_bytes)
     except Exception as exc:
-        raise HTTPException(status_code=502, detail=f"Protocol extraction failed: {exc}") from exc
+        raise HTTPException(
+            status_code=502, detail=f"Protocol extraction failed: {type(exc).__name__}: {exc}"
+        ) from exc
     return extracted
 
 

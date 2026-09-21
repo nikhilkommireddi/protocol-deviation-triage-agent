@@ -1,0 +1,136 @@
+{
+  "protocol_id": "APD334-302",
+  "visit_schedule": [
+    {
+      "visit": "Week 0/Day 1 (Randomization/Baseline)",
+      "target_day": 1,
+      "window_days": 0
+    },
+    {
+      "visit": "Week 2/Day 15",
+      "target_day": 15,
+      "window_days": 3
+    },
+    {
+      "visit": "Week 4/Day 29",
+      "target_day": 29,
+      "window_days": 3
+    },
+    {
+      "visit": "Week 8/Day 57",
+      "target_day": 57,
+      "window_days": 3
+    },
+    {
+      "visit": "Week 12/Day 85 (or Early Termination)",
+      "target_day": 85,
+      "window_days": 3
+    },
+    {
+      "visit": "2-Week Follow-Up Visit",
+      "target_day": 99,
+      "window_days": 3
+    },
+    {
+      "visit": "4-Week Follow-Up Visit",
+      "target_day": 113,
+      "window_days": 3
+    }
+  ],
+  "eligibility_criteria": {
+    "inclusion": [
+      "Men or women 16 to 80 years of age, inclusive, at time of assent/consent; enrollment of subjects <18 years only if acceptable per local law/regulation",
+      "Ability to provide written informed consent/assent and comply with schedule of protocol assessments",
+      "Diagnosed with UC \u22653 months prior to screening, confirmed by endoscopic and histologic evidence",
+      "Active UC confirmed by endoscopy with \u226510 cm rectal involvement; proctitis-only subjects capped at 15% of enrollment",
+      "Moderately to severely active UC defined as modified Mayo score (MMS) of 4 to 9, including endoscopic score (ES) \u22652 and rectal bleeding (RB) score \u22651",
+      "Surveillance colonoscopy within 12 months before baseline (or colonoscopy at screening) to rule out dysplasia in long-duration pancolitis/left-sided colitis; adenomatous polyps removed prior to first dose",
+      "Demonstrated inadequate response to, loss of response to, or intolerance to at least 1 conventional therapy (oral 5-ASA, corticosteroids, thiopurines) or biologic/JAK inhibitor therapy (anti-TNF\u03b1, anti-integrin, anti-IL12/23, JAK inhibitors), with adequate course per local guidelines",
+      "Permitted concomitant therapies (stable oral 5-ASA, oral corticosteroids at defined stable doses, probiotics) with specified stabilization periods; immunosuppressants (AZA/6-MP) discontinued \u22652 weeks prior to randomization",
+      "Adequate hematological function (WBC \u22653.5x10^9/L, ANC \u22651.5x10^9/L, lymphocytes \u22650.8x10^9/L, platelets \u2265100x10^9/L, hemoglobin \u22658 g/dL)",
+      "Adequate hepatic function (total bilirubin \u22641.5xULN, AST/ALT \u22642.0xULN; Gilbert's syndrome allowed)",
+      "Adequate renal function (eGFR \u226530 mL/min/1.73m2)",
+      "Females not of childbearing potential (postmenopausal or permanently sterilized) OR using highly effective contraception; males with partners of childbearing potential must use condoms during treatment and for 30 days after"
+    ],
+    "exclusion": [
+      "Severe extensive colitis (likely need for hospitalization/surgery within 12 weeks, fulminant colitis, toxic megacolon, bowel perforation, or prior colectomy)",
+      "Diagnosis of Crohn's disease, indeterminate colitis, or fistula consistent with Crohn's disease",
+      "Diagnosis of microscopic, ischemic, or infectious colitis",
+      "Hospitalization for UC exacerbation requiring IV steroids within 12 weeks of screening (single IV dose acceptable)",
+      "Positive stool pathogen assay or C. difficile toxin at screening (retest allowed after treatment)",
+      "Pregnancy, lactation, or positive \u03b2-hCG at screening",
+      "Clinically relevant neurological, endocrine, metabolic, psychiatric, cognitive impairment, or substance abuse/dependence disorder that could jeopardize subject or study interpretation",
+      "Cardiovascular risk conditions (recent MI/unstable angina/stroke/TIA/decompensated or Class III-IV heart failure, AV block, sick sinus syndrome, asystole, recurrent bradycardia/syncope, abnormal vital signs or ECG at screening/Day1, recent changes in anti-arrhythmic drugs)",
+      "FEV1 or FVC <70% predicted with FEV1/FVC <0.70 at screening",
+      "Uncontrolled diabetes (HbA1c >9%) or diabetes with significant comorbidities like retinopathy",
+      "History of macular edema or retinopathy",
+      "History of active TB, untreated/inadequately treated latent TB, or active/latent TB at screening (with defined exceptions for treated latent TB)",
+      "Clinically significant active infection within specified timeframes or requiring IV medication, or infection risk that may worsen with immunosuppressive therapy",
+      "HIV/AIDS or positive HIV antibody test",
+      "Acute or chronic hepatitis B infection/positive HBV markers",
+      "Current hepatitis C infection/positive HCV markers with detectable RNA",
+      "History of opportunistic infection (e.g., PML, PJP, cryptococcal meningitis) or disseminated herpes simplex/zoster",
+      "History or current primary/secondary immunodeficiency",
+      "History of cancer within 5 years (except treated basal/squamous cell skin cancer) or colonic mucosal dysplasia",
+      "History of lymphoproliferative disorder, lymphoma, leukemia, myeloproliferative disorder, or multiple myeloma",
+      "Hypersensitivity to etrasimod, excipients, or placebo compounds",
+      "Prior treatment with S1P receptor modulators",
+      "Recent biologic (\u22648 weeks) or small molecule (\u22645 half-lives with detectable levels) treatment prior to randomization",
+      "Investigational therapy \u22643 months prior to randomization",
+      "Prior treatment with \u22653 biologics or \u22652 biologics plus a JAK inhibitor approved for UC",
+      "Topical rectal 5-ASA, short-chain fatty acid enemas, or steroids \u22642 weeks prior to/during screening",
+      "Topical rectal traditional medicine (e.g., Chinese medicine), herb enemas, or suppositories \u22642 weeks prior to randomization",
+      "Methotrexate \u22648 weeks, or cyclosporine/tacrolimus/sirolimus/MMF \u226416 weeks prior to/during screening",
+      "Live vaccine receipt \u22644 weeks prior to randomization",
+      "Previous treatment with natalizumab",
+      "Previous treatment with lymphocyte-depleting therapies (e.g., alemtuzumab, rituximab, cyclophosphamide, etc.)",
+      "Previous treatment with D-penicillamine, thalidomide, dimethyl fumarate, or pyrimidine synthesis inhibitors",
+      "IV immune globulin or plasmapheresis \u22643 months prior to randomization",
+      "Chronic use of moderate/strong CYP2C8/2C9 inhibitors/inducers or UGT1A7 inhibitors \u22644 weeks prior to randomization"
+    ]
+  },
+  "consent_versions": [
+    {
+      "version": "Original Protocol",
+      "effective_date": "2018-12-19",
+      "superseded_date": "2019-03-05",
+      "summary": "Initial protocol version establishing the Phase 3 etrasimod UC induction study design, eligibility, and assessments.",
+      "material_safety_change": false
+    },
+    {
+      "version": "Amendment 1",
+      "effective_date": "2019-03-05",
+      "superseded_date": "2019-09-03",
+      "summary": "Provided additional guidance for Day 1 post-dose cardiac monitoring procedures based on FDA feedback, including revised postdose vital signs, 12-lead ECG timing, monitoring of subjects not meeting discharge criteria, and new discontinuation rules for cardiovascular symptomatic events.",
+      "material_safety_change": true
+    },
+    {
+      "version": "Amendment 1.1",
+      "effective_date": "2019-09-03",
+      "superseded_date": "2020-02-07",
+      "summary": "Region-specific amendment; specific content of changes not detailed in the available summary-of-changes documentation.",
+      "material_safety_change": false
+    },
+    {
+      "version": "Amendment 2.0",
+      "effective_date": "2020-02-07",
+      "superseded_date": "2020-02-21",
+      "summary": "Updated eligibility criteria (contraception requirements, hematological function thresholds, ALT/AST limits), added ophthalmoscopy/OCT and TB screening safety guidance, removed prohibition of concomitant QT-prolonging drugs based on QT study results, and added a 4-Week Safety Follow-Up visit.",
+      "material_safety_change": true
+    },
+    {
+      "version": "Amendment 2.1",
+      "effective_date": "2020-02-21",
+      "superseded_date": "2021-02-22",
+      "summary": "Region-specific amendment; specific content of changes not detailed in the available summary-of-changes documentation.",
+      "material_safety_change": false
+    },
+    {
+      "version": "Amendment 3.0",
+      "effective_date": "2021-02-22",
+      "superseded_date": null,
+      "summary": "Added guidance for virtual/offsite study visits, added anti-arrhythmic drug restrictions to prohibited concomitant therapies, clarified timing of screening OCT/PFT assessments, added a new exclusion criterion for topical rectal traditional medicine/enemas/suppositories prior to randomization, and refined several eligibility criteria (e.g., cardiovascular exclusion criteria, hospitalization timing) for clarity and safety.",
+      "material_safety_change": true
+    }
+  ]
+}

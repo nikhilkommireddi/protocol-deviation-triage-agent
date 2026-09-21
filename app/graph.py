@@ -25,31 +25,18 @@ node.
 from __future__ import annotations
 
 import json
-import logging
-import time
 import uuid
 from pathlib import Path
 from typing import TypedDict
 
-import anthropic
 import torch
 from dotenv import load_dotenv
 from langgraph.graph import END, START, StateGraph
 
 from app import db, protocol_lookup
+from app.retry import RETRYABLE_ERRORS, call_with_retries as _call_with_retries, client as _client
 
 load_dotenv()  # picks up ANTHROPIC_API_KEY from a local .env, if present
-
-logger = logging.getLogger(__name__)
-
-RETRYABLE_ERRORS = (
-    anthropic.APIConnectionError,
-    anthropic.APITimeoutError,
-    anthropic.RateLimitError,
-    anthropic.InternalServerError,
-    json.JSONDecodeError,
-    StopIteration,  # a structured-output response missing the expected text block
-)
 
 
 class TriageAgentError(Exception):
@@ -58,36 +45,6 @@ class TriageAgentError(Exception):
     clear 502 to the caller instead of an opaque 500 -- the pipeline genuinely
     couldn't complete this triage right now, which is different from a bug."""
 
-
-def _client() -> anthropic.Anthropic:
-    # max_retries=0 disables the SDK's own hidden retry/backoff layer, which
-    # on a 429 waits however long the server's Retry-After header says --
-    # observed once taking 26 minutes on a single call, completely silently.
-    # _call_with_retries below is our one explicit, logged, bounded retry
-    # layer; stacking the SDK's hidden one underneath it turns a visible,
-    # predictable-worst-case retry into an invisible, unbounded-feeling one.
-    return anthropic.Anthropic(max_retries=0)
-
-
-def _call_with_retries(fn, *args, max_attempts: int = 3, base_delay: float = 1.0, **kwargs):
-    fn_name = getattr(fn, "__name__", repr(fn))
-    for attempt in range(max_attempts):
-        try:
-            return fn(*args, **kwargs)
-        except RETRYABLE_ERRORS as exc:
-            if attempt == max_attempts - 1:
-                logger.warning("%s failed after %d attempts, giving up: %s", fn_name, max_attempts, exc)
-                raise
-            delay = base_delay * (2**attempt)
-            logger.warning(
-                "%s failed (attempt %d/%d): %s -- retrying in %.1fs",
-                fn_name,
-                attempt + 1,
-                max_attempts,
-                exc,
-                delay,
-            )
-            time.sleep(delay)
 
 MODEL_DIR = Path("models/deviation-classifier")
 CAPA_GUIDANCE_PATH = Path("data/capa_guidance.json")

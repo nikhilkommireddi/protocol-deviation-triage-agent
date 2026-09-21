@@ -14,8 +14,9 @@ from __future__ import annotations
 import base64
 import json
 
-import anthropic
 from dotenv import load_dotenv
+
+from app.retry import client as _client
 
 load_dotenv()  # picks up ANTHROPIC_API_KEY from a local .env, if present
 
@@ -59,7 +60,7 @@ EXTRACTION_SYSTEM_PROMPT = (
 
 
 def extract_from_pdf(pdf_bytes: bytes) -> dict:
-    client = anthropic.Anthropic()
+    client = _client()
     encoded = base64.standard_b64encode(pdf_bytes).decode("utf-8")
 
     response = client.messages.create(

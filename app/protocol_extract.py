@@ -23,8 +23,9 @@ from __future__ import annotations
 import base64
 import json
 
-import anthropic
 from dotenv import load_dotenv
+
+from app.retry import client as _client
 
 load_dotenv()  # picks up ANTHROPIC_API_KEY from a local .env, if present
 
@@ -124,12 +125,16 @@ PROTOCOL_EXTRACTION_SYSTEM_PROMPT = (
 
 
 def extract_protocol_from_pdf(pdf_bytes: bytes) -> dict:
-    client = anthropic.Anthropic()
+    client = _client()
     encoded = base64.standard_b64encode(pdf_bytes).decode("utf-8")
 
     response = client.messages.create(
         model=PROTOCOL_EXTRACTION_MODEL,
-        max_tokens=4096,
+        # Real protocols vary hugely in how much amendment history and how
+        # many eligibility criteria they document -- 4096 truncated mid-JSON
+        # on a content-rich real protocol (a multi-amendment Phase 3 trial),
+        # producing an unparseable response with no warning.
+        max_tokens=8192,
         system=PROTOCOL_EXTRACTION_SYSTEM_PROMPT,
         output_config={
             "effort": "medium",
