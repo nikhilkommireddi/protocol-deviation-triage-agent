@@ -45,6 +45,10 @@
     @apply text-slate-400 cursor-not-allowed;
   }
 
+  .sidebar-group-label {
+    @apply px-3 pt-4 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400;
+  }
+
   .badge {
     @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium border;
   }

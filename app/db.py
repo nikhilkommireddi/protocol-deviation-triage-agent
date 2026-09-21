@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS triage_records (
     capa_guidance TEXT,
     memo TEXT,
     verification TEXT,
+    capa_actions_status TEXT,
     status TEXT NOT NULL,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
@@ -116,6 +117,7 @@ def _row_to_dict(row: sqlite3.Row) -> dict:
         "capa_guidance",
         "memo",
         "verification",
+        "capa_actions_status",
     ):
         if d.get(key):
             d[key] = json.loads(d[key])

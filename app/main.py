@@ -7,15 +7,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from app import db, protocol_lookup
-from app.graph import TriageAgentError, deliver_to_queue, graph
+from app.graph import CAPA_GUIDANCE_PATH, LABELS_PATH, TriageAgentError, deliver_to_queue, graph
 from app.pdf_extract import extract_from_pdf
 from app.protocol_extract import extract_protocol_from_pdf, to_storage_format
 from app.retry import call_with_retries
 from app.schemas import (
+    CapaActionsUpdate,
     DeviationSubmission,
     ExtractedFields,
     ProtocolExtraction,
     ProtocolSaveRequest,
+    ReferenceData,
     ReviewSubmission,
     TriageResult,
 )
@@ -145,6 +147,23 @@ def review_report(report_id: str, submission: ReviewSubmission):
         raise HTTPException(status_code=404, detail="report not found")
     db.update_report(report_id, {"memo": submission.memo.model_dump(), "status": submission.status})
     return db.get_report(report_id)
+
+
+@app.post("/reports/{report_id}/capa-actions", response_model=TriageResult)
+def update_capa_actions(report_id: str, submission: CapaActionsUpdate):
+    record = db.get_report(report_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="report not found")
+    db.update_report(report_id, {"capa_actions_status": submission.actions_status})
+    return db.get_report(report_id)
+
+
+@app.get("/reference", response_model=ReferenceData)
+def get_reference_data():
+    labels_markdown = LABELS_PATH.read_text(encoding="utf-8")
+    with CAPA_GUIDANCE_PATH.open(encoding="utf-8") as f:
+        capa_guidance = json.load(f)
+    return {"labels_markdown": labels_markdown, "capa_guidance": capa_guidance}
 
 
 @app.post("/queue")

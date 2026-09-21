@@ -1,6 +1,23 @@
-import { BarChart3, ClipboardList, FileText, ShieldCheck, UserCircle } from "lucide-react";
+import {
+  BarChart3,
+  BookOpen,
+  ClipboardList,
+  Inbox,
+  ShieldAlert,
+  ShieldCheck,
+  UserCircle,
+  Users,
+  Wrench,
+} from "lucide-react";
 
-export type View = "submit" | "review" | "analytics";
+export type View =
+  | "submit"
+  | "review"
+  | "correct"
+  | "analytics"
+  | "safety"
+  | "rules"
+  | "subjects";
 
 interface SidebarProps {
   active: View;
@@ -18,24 +35,53 @@ export function Sidebar({ active, onNavigate }: SidebarProps) {
         </div>
       </div>
 
-      <nav className="flex-1 px-3 py-4 space-y-1">
+      <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
+        <p className="sidebar-group-label">Workflow</p>
         <NavItem
-          icon={<FileText className="w-4 h-4" />}
-          label="Submit New Deviation"
+          icon={<Inbox className="w-4 h-4" />}
+          label="Intake"
           active={active === "submit"}
           onClick={() => onNavigate("submit")}
         />
         <NavItem
           icon={<ClipboardList className="w-4 h-4" />}
-          label="Review Queue"
+          label="Review"
           active={active === "review"}
           onClick={() => onNavigate("review")}
         />
+        <NavItem
+          icon={<Wrench className="w-4 h-4" />}
+          label="Correct"
+          active={active === "correct"}
+          onClick={() => onNavigate("correct")}
+        />
+
+        <p className="sidebar-group-label">Oversight</p>
         <NavItem
           icon={<BarChart3 className="w-4 h-4" />}
           label="Analytics"
           active={active === "analytics"}
           onClick={() => onNavigate("analytics")}
+        />
+        <NavItem
+          icon={<ShieldAlert className="w-4 h-4" />}
+          label="Safety Tracker"
+          active={active === "safety"}
+          onClick={() => onNavigate("safety")}
+        />
+
+        <p className="sidebar-group-label">Reference</p>
+        <NavItem
+          icon={<BookOpen className="w-4 h-4" />}
+          label="Rule Catalog"
+          active={active === "rules"}
+          onClick={() => onNavigate("rules")}
+        />
+        <NavItem
+          icon={<Users className="w-4 h-4" />}
+          label="Subjects"
+          active={active === "subjects"}
+          onClick={() => onNavigate("subjects")}
         />
       </nav>
 

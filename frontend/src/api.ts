@@ -1,6 +1,7 @@
 import type {
   DeviationSubmission,
   ExtractedFields,
+  ReferenceData,
   ReviewSubmission,
   TriageResult,
 } from "./types";
@@ -61,4 +62,18 @@ export function reviewReport(
     method: "POST",
     body: JSON.stringify(submission),
   });
+}
+
+export function updateCapaActionsStatus(
+  reportId: string,
+  actionsStatus: boolean[],
+): Promise<TriageResult> {
+  return request<TriageResult>(`/reports/${reportId}/capa-actions`, {
+    method: "POST",
+    body: JSON.stringify({ actions_status: actionsStatus }),
+  });
+}
+
+export function getReferenceData(): Promise<ReferenceData> {
+  return request<ReferenceData>("/reference");
 }

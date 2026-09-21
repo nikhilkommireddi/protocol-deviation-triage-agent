@@ -40,6 +40,7 @@ class TriageResult(BaseModel):
     capa_guidance: dict | None = None
     memo: dict | None = None
     verification: dict | None = None
+    capa_actions_status: list[bool] | None = None
     status: str
     created_at: str
     updated_at: str
@@ -59,6 +60,15 @@ class MemoUpdate(BaseModel):
 class ReviewSubmission(BaseModel):
     memo: MemoUpdate
     status: Literal["approved", "rejected"]
+
+
+class CapaActionsUpdate(BaseModel):
+    actions_status: list[bool]
+
+
+class ReferenceData(BaseModel):
+    labels_markdown: str
+    capa_guidance: dict
 
 
 class VisitScheduleEntry(BaseModel):

@@ -82,6 +82,7 @@ export interface TriageResult {
   capa_guidance: CapaGuidance | null;
   memo: Memo | null;
   verification: Verification | null;
+  capa_actions_status: boolean[] | null;
   status: string;
   created_at: string;
   updated_at: string;
@@ -92,4 +93,9 @@ export type ReviewDecision = "approved" | "rejected";
 export interface ReviewSubmission {
   memo: Memo;
   status: ReviewDecision;
+}
+
+export interface ReferenceData {
+  labels_markdown: string;
+  capa_guidance: Record<string, CapaGuidance>;
 }

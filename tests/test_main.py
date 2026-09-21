@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
-from app import protocol_lookup
+from app import db, protocol_lookup
 from app.main import app
 
 
@@ -96,6 +96,60 @@ class TestProtocolEndpoints(unittest.TestCase):
             response = client.post("/protocols/bad id!", json=payload)
         self.assertEqual(response.status_code, 400)
         self.assertFalse((protocol_lookup.PROTOCOLS_DIR / "bad id!.json").exists())
+
+
+class TestReferenceAndCapaActionsEndpoints(unittest.TestCase):
+    def setUp(self):
+        self._tmp_dir = tempfile.TemporaryDirectory()
+        self._db_path = Path(self._tmp_dir.name) / "test_triage.db"
+        self._orig_db_path = db.DB_PATH
+        db.DB_PATH = self._db_path
+        db.init_db()
+
+    def tearDown(self):
+        db.DB_PATH = self._orig_db_path
+        self._tmp_dir.cleanup()
+
+    def _insert_report(self, report_id: str, status: str = "approved"):
+        db.insert_report(
+            {
+                "report_id": report_id,
+                "protocol_id": "PDA-2024-001",
+                "site_id": "001",
+                "subject_id": "001-0001",
+                "deviation_date": "2024-05-01",
+                "discovery_date": "2024-05-02",
+                "text": "Some deviation.",
+                "status": status,
+            }
+        )
+
+    def test_get_reference_data(self):
+        with TestClient(app) as client:
+            response = client.get("/reference")
+        self.assertEqual(response.status_code, 200)
+        body = response.json()
+        self.assertIn("major", body["capa_guidance"])
+        self.assertIn("## major", body["labels_markdown"])
+
+    def test_update_capa_actions_persists_and_round_trips(self):
+        self._insert_report("r1")
+        with TestClient(app) as client:
+            response = client.post(
+                "/reports/r1/capa-actions", json={"actions_status": [True, False, True]}
+            )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["capa_actions_status"], [True, False, True])
+
+        record = db.get_report("r1")
+        self.assertEqual(record["capa_actions_status"], [True, False, True])
+
+    def test_update_capa_actions_404_for_missing_report(self):
+        with TestClient(app) as client:
+            response = client.post(
+                "/reports/does-not-exist/capa-actions", json={"actions_status": [True]}
+            )
+        self.assertEqual(response.status_code, 404)
 
 
 if __name__ == "__main__":
