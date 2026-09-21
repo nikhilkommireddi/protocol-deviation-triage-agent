@@ -152,5 +152,95 @@ class TestReferenceAndCapaActionsEndpoints(unittest.TestCase):
         self.assertEqual(response.status_code, 404)
 
 
+class TestUserAndSiteEndpoints(unittest.TestCase):
+    def setUp(self):
+        self._tmp_dir = tempfile.TemporaryDirectory()
+        self._db_path = Path(self._tmp_dir.name) / "test_triage.db"
+        self._orig_db_path = db.DB_PATH
+        db.DB_PATH = self._db_path
+        db.init_db()
+
+    def tearDown(self):
+        db.DB_PATH = self._orig_db_path
+        self._tmp_dir.cleanup()
+
+    def test_fresh_db_seeds_one_user_per_role_and_one_site(self):
+        with TestClient(app) as client:
+            users = client.get("/users").json()
+            sites = client.get("/sites").json()
+
+        roles = {u["role"] for u in users}
+        self.assertEqual(
+            roles, {"site_coordinator", "cra", "quality_reviewer", "administrator"}
+        )
+        self.assertEqual(len(sites), 1)
+        self.assertEqual(sites[0]["site_id"], "001")
+
+    def test_create_update_delete_user(self):
+        with TestClient(app) as client:
+            created = client.post(
+                "/users", json={"name": "New Coordinator", "role": "site_coordinator", "site_id": "001"}
+            ).json()
+            self.assertEqual(created["name"], "New Coordinator")
+            user_id = created["user_id"]
+
+            updated = client.put(
+                f"/users/{user_id}",
+                json={"name": "Renamed Coordinator", "role": "site_coordinator", "site_id": "001"},
+            ).json()
+            self.assertEqual(updated["name"], "Renamed Coordinator")
+
+            delete_response = client.delete(f"/users/{user_id}")
+            self.assertEqual(delete_response.status_code, 200)
+            self.assertIsNone(db.get_user(user_id))
+
+    def test_cannot_delete_last_administrator(self):
+        with TestClient(app) as client:
+            users = client.get("/users").json()
+            admin = next(u for u in users if u["role"] == "administrator")
+            response = client.delete(f"/users/{admin['user_id']}")
+        self.assertEqual(response.status_code, 400)
+        self.assertIsNotNone(db.get_user(admin["user_id"]))
+
+    def test_deleting_one_of_two_administrators_is_allowed(self):
+        with TestClient(app) as client:
+            second_admin = client.post(
+                "/users", json={"name": "Second Admin", "role": "administrator"}
+            ).json()
+            first_admin = next(u for u in client.get("/users").json() if u["role"] == "administrator" and u["user_id"] != second_admin["user_id"])
+
+            response = client.delete(f"/users/{first_admin['user_id']}")
+        self.assertEqual(response.status_code, 200)
+
+    def test_create_site_rejects_duplicate_id(self):
+        with TestClient(app) as client:
+            response = client.post(
+                "/sites", json={"site_id": "001", "name": "Duplicate"}
+            )
+        self.assertEqual(response.status_code, 400)
+
+    def test_create_site_rejects_invalid_id_characters(self):
+        with TestClient(app) as client:
+            response = client.post("/sites", json={"site_id": "bad id!", "name": "Bad"})
+        self.assertEqual(response.status_code, 400)
+
+    def test_create_update_delete_site(self):
+        with TestClient(app) as client:
+            created = client.post(
+                "/sites", json={"site_id": "042", "name": "New Site", "protocol_id": "PDA-2024-001"}
+            ).json()
+            self.assertEqual(created["status"], "active")
+
+            updated = client.put(
+                "/sites/042",
+                json={"name": "Renamed Site", "protocol_id": "PDA-2024-001", "status": "inactive"},
+            ).json()
+            self.assertEqual(updated["status"], "inactive")
+
+            delete_response = client.delete("/sites/042")
+            self.assertEqual(delete_response.status_code, 200)
+            self.assertIsNone(db.get_site("042"))
+
+
 if __name__ == "__main__":
     unittest.main()

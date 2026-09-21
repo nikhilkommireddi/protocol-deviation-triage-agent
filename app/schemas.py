@@ -66,6 +66,52 @@ class CapaActionsUpdate(BaseModel):
     actions_status: list[bool]
 
 
+UserRole = Literal["site_coordinator", "cra", "quality_reviewer", "administrator"]
+
+
+class UserCreate(BaseModel):
+    name: str
+    role: UserRole
+    site_id: str | None = None
+
+
+class UserUpdate(BaseModel):
+    name: str
+    role: UserRole
+    site_id: str | None = None
+
+
+class UserRecord(BaseModel):
+    user_id: str
+    name: str
+    role: str
+    site_id: str | None = None
+    created_at: str
+    updated_at: str
+
+
+class SiteCreate(BaseModel):
+    site_id: str
+    name: str
+    protocol_id: str | None = None
+    status: Literal["active", "inactive"] = "active"
+
+
+class SiteUpdate(BaseModel):
+    name: str
+    protocol_id: str | None = None
+    status: Literal["active", "inactive"]
+
+
+class SiteRecord(BaseModel):
+    site_id: str
+    name: str
+    protocol_id: str | None = None
+    status: str
+    created_at: str
+    updated_at: str
+
+
 class ReferenceData(BaseModel):
     labels_markdown: str
     capa_guidance: dict

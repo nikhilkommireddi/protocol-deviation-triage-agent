@@ -1,29 +1,15 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import type { DemoUser, UserRole } from "../types";
-import { DEMO_SITE_ID } from "../lib/permissions";
+import type { DemoUser, ManagedUser } from "../types";
 
 const STORAGE_KEY = "demo-auth-user";
 
 interface AuthContextValue {
   user: DemoUser | null;
-  login: (role: UserRole) => void;
+  login: (managedUser: ManagedUser) => void;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
-
-function roleDisplayName(role: UserRole): string {
-  switch (role) {
-    case "site_coordinator":
-      return "Site Coordinator";
-    case "cra":
-      return "CRA Reviewer";
-    case "quality_reviewer":
-      return "Quality Reviewer";
-    case "administrator":
-      return "Administrator";
-  }
-}
 
 function loadStoredUser(): DemoUser | null {
   try {
@@ -47,11 +33,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [user]);
 
-  function login(role: UserRole) {
+  function login(managedUser: ManagedUser) {
     setUser({
-      name: roleDisplayName(role),
-      role,
-      siteId: role === "site_coordinator" ? DEMO_SITE_ID : undefined,
+      name: managedUser.name,
+      role: managedUser.role,
+      siteId: managedUser.site_id ?? undefined,
     });
   }
 

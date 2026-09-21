@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -39,6 +40,28 @@ CREATE TABLE IF NOT EXISTS triage_records (
 )
 """
 
+USERS_SCHEMA = """
+CREATE TABLE IF NOT EXISTS users (
+    user_id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    role TEXT NOT NULL,
+    site_id TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+)
+"""
+
+SITES_SCHEMA = """
+CREATE TABLE IF NOT EXISTS sites (
+    site_id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    protocol_id TEXT,
+    status TEXT NOT NULL DEFAULT 'active',
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+)
+"""
+
 
 def get_connection(db_path: Path | str | None = None) -> sqlite3.Connection:
     conn = sqlite3.connect(str(db_path if db_path is not None else DB_PATH))
@@ -50,9 +73,41 @@ def init_db(db_path: Path | str | None = None) -> None:
     conn = get_connection(db_path)
     try:
         conn.execute(SCHEMA)
+        conn.execute(USERS_SCHEMA)
+        conn.execute(SITES_SCHEMA)
         conn.commit()
+        _seed_defaults_if_empty(conn)
     finally:
         conn.close()
+
+
+def _seed_defaults_if_empty(conn: sqlite3.Connection) -> None:
+    (user_count,) = conn.execute("SELECT COUNT(*) FROM users").fetchone()
+    (site_count,) = conn.execute("SELECT COUNT(*) FROM sites").fetchone()
+    now = _now()
+
+    if site_count == 0:
+        conn.execute(
+            "INSERT INTO sites (site_id, name, protocol_id, status, created_at, updated_at) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            ("001", "Example Clinic - Site 001", "PDA-2024-001", "active", now, now),
+        )
+
+    if user_count == 0:
+        defaults = [
+            ("Alex Coordinator", "site_coordinator", "001"),
+            ("Jordan CRA", "cra", None),
+            ("Sam Reviewer", "quality_reviewer", None),
+            ("Taylor Admin", "administrator", None),
+        ]
+        for name, role, site_id in defaults:
+            conn.execute(
+                "INSERT INTO users (user_id, name, role, site_id, created_at, updated_at) "
+                "VALUES (?, ?, ?, ?, ?, ?)",
+                (str(uuid.uuid4()), name, role, site_id, now, now),
+            )
+
+    conn.commit()
 
 
 def _now() -> str:
@@ -163,5 +218,138 @@ def list_reports_by_site(
             (protocol_id, site_id, exclude_report_id or ""),
         ).fetchall()
         return [_row_to_dict(r) for r in rows]
+    finally:
+        conn.close()
+
+
+# --- Users -------------------------------------------------------------------
+
+
+def insert_user(record: dict, db_path: Path | str | None = None) -> dict:
+    conn = get_connection(db_path)
+    try:
+        now = _now()
+        user_id = str(uuid.uuid4())
+        conn.execute(
+            "INSERT INTO users (user_id, name, role, site_id, created_at, updated_at) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            (user_id, record["name"], record["role"], record.get("site_id"), now, now),
+        )
+        conn.commit()
+        return {**record, "user_id": user_id, "created_at": now, "updated_at": now}
+    finally:
+        conn.close()
+
+
+def list_users(db_path: Path | str | None = None) -> list[dict]:
+    conn = get_connection(db_path)
+    try:
+        rows = conn.execute("SELECT * FROM users ORDER BY created_at ASC").fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+
+def get_user(user_id: str, db_path: Path | str | None = None) -> dict | None:
+    conn = get_connection(db_path)
+    try:
+        row = conn.execute("SELECT * FROM users WHERE user_id = ?", (user_id,)).fetchone()
+        return dict(row) if row else None
+    finally:
+        conn.close()
+
+
+def count_users_by_role(role: str, db_path: Path | str | None = None) -> int:
+    conn = get_connection(db_path)
+    try:
+        (count,) = conn.execute("SELECT COUNT(*) FROM users WHERE role = ?", (role,)).fetchone()
+        return count
+    finally:
+        conn.close()
+
+
+def update_user(user_id: str, fields: dict, db_path: Path | str | None = None) -> None:
+    if not fields:
+        return
+    conn = get_connection(db_path)
+    try:
+        set_clause = ", ".join(f"{k} = ?" for k in fields)
+        values = list(fields.values()) + [_now(), user_id]
+        conn.execute(f"UPDATE users SET {set_clause}, updated_at = ? WHERE user_id = ?", values)
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def delete_user(user_id: str, db_path: Path | str | None = None) -> None:
+    conn = get_connection(db_path)
+    try:
+        conn.execute("DELETE FROM users WHERE user_id = ?", (user_id,))
+        conn.commit()
+    finally:
+        conn.close()
+
+
+# --- Sites -------------------------------------------------------------------
+
+
+def insert_site(record: dict, db_path: Path | str | None = None) -> dict:
+    conn = get_connection(db_path)
+    try:
+        now = _now()
+        conn.execute(
+            "INSERT INTO sites (site_id, name, protocol_id, status, created_at, updated_at) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            (
+                record["site_id"],
+                record["name"],
+                record.get("protocol_id"),
+                record.get("status", "active"),
+                now,
+                now,
+            ),
+        )
+        conn.commit()
+        return {**record, "status": record.get("status", "active"), "created_at": now, "updated_at": now}
+    finally:
+        conn.close()
+
+
+def list_sites(db_path: Path | str | None = None) -> list[dict]:
+    conn = get_connection(db_path)
+    try:
+        rows = conn.execute("SELECT * FROM sites ORDER BY created_at ASC").fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+
+def get_site(site_id: str, db_path: Path | str | None = None) -> dict | None:
+    conn = get_connection(db_path)
+    try:
+        row = conn.execute("SELECT * FROM sites WHERE site_id = ?", (site_id,)).fetchone()
+        return dict(row) if row else None
+    finally:
+        conn.close()
+
+
+def update_site(site_id: str, fields: dict, db_path: Path | str | None = None) -> None:
+    if not fields:
+        return
+    conn = get_connection(db_path)
+    try:
+        set_clause = ", ".join(f"{k} = ?" for k in fields)
+        values = list(fields.values()) + [_now(), site_id]
+        conn.execute(f"UPDATE sites SET {set_clause}, updated_at = ? WHERE site_id = ?", values)
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def delete_site(site_id: str, db_path: Path | str | None = None) -> None:
+    conn = get_connection(db_path)
+    try:
+        conn.execute("DELETE FROM sites WHERE site_id = ?", (site_id,))
+        conn.commit()
     finally:
         conn.close()

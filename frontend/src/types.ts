@@ -6,6 +6,45 @@ export interface DemoUser {
   siteId?: string;
 }
 
+export interface ManagedUser {
+  user_id: string;
+  name: string;
+  role: UserRole;
+  site_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UserInput {
+  name: string;
+  role: UserRole;
+  site_id?: string | null;
+}
+
+export type SiteStatus = "active" | "inactive";
+
+export interface ManagedSite {
+  site_id: string;
+  name: string;
+  protocol_id: string | null;
+  status: SiteStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SiteCreateInput {
+  site_id: string;
+  name: string;
+  protocol_id?: string | null;
+  status?: SiteStatus;
+}
+
+export interface SiteUpdateInput {
+  name: string;
+  protocol_id?: string | null;
+  status: SiteStatus;
+}
+
 export interface DeviationSubmission {
   protocol_id: string;
   site_id: string;

@@ -1,9 +1,14 @@
 import type {
   DeviationSubmission,
   ExtractedFields,
+  ManagedSite,
+  ManagedUser,
   ReferenceData,
   ReviewSubmission,
+  SiteCreateInput,
+  SiteUpdateInput,
   TriageResult,
+  UserInput,
 } from "./types";
 
 const API_BASE_URL =
@@ -76,4 +81,42 @@ export function updateCapaActionsStatus(
 
 export function getReferenceData(): Promise<ReferenceData> {
   return request<ReferenceData>("/reference");
+}
+
+export function listUsers(): Promise<ManagedUser[]> {
+  return request<ManagedUser[]>("/users");
+}
+
+export function createUser(input: UserInput): Promise<ManagedUser> {
+  return request<ManagedUser>("/users", { method: "POST", body: JSON.stringify(input) });
+}
+
+export function updateUser(userId: string, input: UserInput): Promise<ManagedUser> {
+  return request<ManagedUser>(`/users/${userId}`, {
+    method: "PUT",
+    body: JSON.stringify(input),
+  });
+}
+
+export function deleteUser(userId: string): Promise<{ deleted: string }> {
+  return request<{ deleted: string }>(`/users/${userId}`, { method: "DELETE" });
+}
+
+export function listSites(): Promise<ManagedSite[]> {
+  return request<ManagedSite[]>("/sites");
+}
+
+export function createSite(input: SiteCreateInput): Promise<ManagedSite> {
+  return request<ManagedSite>("/sites", { method: "POST", body: JSON.stringify(input) });
+}
+
+export function updateSite(siteId: string, input: SiteUpdateInput): Promise<ManagedSite> {
+  return request<ManagedSite>(`/sites/${siteId}`, {
+    method: "PUT",
+    body: JSON.stringify(input),
+  });
+}
+
+export function deleteSite(siteId: string): Promise<{ deleted: string }> {
+  return request<{ deleted: string }>(`/sites/${siteId}`, { method: "DELETE" });
 }

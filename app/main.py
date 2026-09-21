@@ -19,12 +19,18 @@ from app.schemas import (
     ProtocolSaveRequest,
     ReferenceData,
     ReviewSubmission,
+    SiteCreate,
+    SiteRecord,
+    SiteUpdate,
     TriageResult,
+    UserCreate,
+    UserRecord,
+    UserUpdate,
 )
 
 MAX_PDF_SIZE_BYTES = 10 * 1024 * 1024
 MAX_PROTOCOL_PDF_SIZE_BYTES = 20 * 1024 * 1024  # real protocols run 80-150 pages
-PROTOCOL_ID_PATTERN = re.compile(r"^[A-Za-z0-9._-]+$")
+SAFE_ID_PATTERN = re.compile(r"^[A-Za-z0-9._-]+$")
 
 
 @asynccontextmanager
@@ -113,7 +119,7 @@ async def extract_protocol_pdf(file: UploadFile = File(...)):
 
 @app.post("/protocols/{protocol_id}")
 def save_protocol(protocol_id: str, submission: ProtocolSaveRequest):
-    if not PROTOCOL_ID_PATTERN.match(protocol_id):
+    if not SAFE_ID_PATTERN.match(protocol_id):
         raise HTTPException(
             status_code=400,
             detail="protocol_id may only contain letters, digits, '.', '_', and '-'.",
@@ -164,6 +170,90 @@ def get_reference_data():
     with CAPA_GUIDANCE_PATH.open(encoding="utf-8") as f:
         capa_guidance = json.load(f)
     return {"labels_markdown": labels_markdown, "capa_guidance": capa_guidance}
+
+
+@app.get("/users", response_model=list[UserRecord])
+def list_users():
+    return db.list_users()
+
+
+@app.post("/users", response_model=UserRecord)
+def create_user(submission: UserCreate):
+    return db.insert_user(submission.model_dump())
+
+
+@app.get("/users/{user_id}", response_model=UserRecord)
+def get_user(user_id: str):
+    record = db.get_user(user_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="user not found")
+    return record
+
+
+@app.put("/users/{user_id}", response_model=UserRecord)
+def update_user(user_id: str, submission: UserUpdate):
+    record = db.get_user(user_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="user not found")
+    db.update_user(user_id, submission.model_dump())
+    return db.get_user(user_id)
+
+
+@app.delete("/users/{user_id}")
+def delete_user(user_id: str):
+    record = db.get_user(user_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="user not found")
+    if record["role"] == "administrator" and db.count_users_by_role("administrator") <= 1:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot delete the last remaining Administrator.",
+        )
+    db.delete_user(user_id)
+    return {"deleted": user_id}
+
+
+@app.get("/sites", response_model=list[SiteRecord])
+def list_sites():
+    return db.list_sites()
+
+
+@app.post("/sites", response_model=SiteRecord)
+def create_site(submission: SiteCreate):
+    if not SAFE_ID_PATTERN.match(submission.site_id):
+        raise HTTPException(
+            status_code=400,
+            detail="site_id may only contain letters, digits, '.', '_', and '-'.",
+        )
+    if db.get_site(submission.site_id) is not None:
+        raise HTTPException(status_code=400, detail="A site with this site_id already exists.")
+    return db.insert_site(submission.model_dump())
+
+
+@app.get("/sites/{site_id}", response_model=SiteRecord)
+def get_site(site_id: str):
+    record = db.get_site(site_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="site not found")
+    return record
+
+
+@app.put("/sites/{site_id}", response_model=SiteRecord)
+def update_site(site_id: str, submission: SiteUpdate):
+    record = db.get_site(site_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="site not found")
+    db.update_site(site_id, submission.model_dump())
+    return db.get_site(site_id)
+
+
+@app.delete("/sites/{site_id}")
+def delete_site(site_id: str):
+    record = db.get_site(site_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="site not found")
+    db.delete_site(site_id)
+    return {"deleted": site_id}
 
 
 @app.post("/queue")

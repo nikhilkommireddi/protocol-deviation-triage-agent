@@ -5,8 +5,6 @@ import type { DemoUser, UserRole } from "../types";
 // role picked here. This exists to demo what a role-based UI would look
 // like, not to secure anything.
 
-export const DEMO_SITE_ID = "001";
-
 export type Capability =
   | "intake"
   | "review"

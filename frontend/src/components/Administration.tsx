@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Check, Info, MapPin, Minus, Users } from "lucide-react";
+import { Check, MapPin, Minus, Shield, UserCog, Users } from "lucide-react";
 import { listReports } from "../api";
 import type { TriageResult } from "../types";
 import {
@@ -12,8 +12,63 @@ import {
 } from "../lib/permissions";
 import { PageHeader } from "./PageHeader";
 import { StatCard } from "./StatCard";
+import { UsersPanel } from "./admin/UsersPanel";
+import { SitesPanel } from "./admin/SitesPanel";
+
+type Tab = "overview" | "users" | "sites";
 
 export function Administration() {
+  const [tab, setTab] = useState<Tab>("overview");
+
+  return (
+    <div>
+      <PageHeader title="Administration" subtitle="Users, sites, and role permissions" />
+
+      <div className="flex gap-1 mb-6 border-b border-slate-200">
+        <TabButton active={tab === "overview"} icon={<Shield className="w-4 h-4" />} onClick={() => setTab("overview")}>
+          Overview
+        </TabButton>
+        <TabButton active={tab === "users"} icon={<UserCog className="w-4 h-4" />} onClick={() => setTab("users")}>
+          Users
+        </TabButton>
+        <TabButton active={tab === "sites"} icon={<MapPin className="w-4 h-4" />} onClick={() => setTab("sites")}>
+          Sites
+        </TabButton>
+      </div>
+
+      {tab === "overview" && <Overview />}
+      {tab === "users" && <UsersPanel />}
+      {tab === "sites" && <SitesPanel />}
+    </div>
+  );
+}
+
+function TabButton({
+  active,
+  icon,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  icon: React.ReactNode;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={
+        "flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 -mb-px " +
+        (active ? "border-sky-600 text-sky-700" : "border-transparent text-slate-500 hover:text-slate-700")
+      }
+    >
+      {icon}
+      {children}
+    </button>
+  );
+}
+
+function Overview() {
   const [reports, setReports] = useState<TriageResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,20 +92,6 @@ export function Administration() {
 
   return (
     <div>
-      <PageHeader
-        title="Administration"
-        subtitle="Role permissions and system-wide oversight"
-      />
-
-      <div className="card bg-amber-50 border-amber-200 flex items-start gap-2 mb-6">
-        <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-        <p className="text-sm text-amber-900">
-          This is a read-only view. There's no backend user/site management to connect to yet,
-          so this page shows the actual permission configuration driving navigation access
-          rather than a form that would save nowhere real.
-        </p>
-      </div>
-
       {loading ? (
         <p className="text-slate-500">Loading...</p>
       ) : error ? (
