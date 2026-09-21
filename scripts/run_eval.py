@@ -26,6 +26,12 @@ REPORT_MD_PATH = Path("eval_report.md")
 
 MIN_WORDS = 15
 MIN_CAPA_ACTIONS = 2
+# Each case now makes ~7-10 real API calls across the multi-agent pipeline;
+# 33 cases back-to-back with no pacing tripped a real Anthropic rate limit
+# during this project's development (one call silently waited 26 minutes).
+# A small pause between cases keeps total request rate well under typical
+# per-minute limits without meaningfully slowing the overall run.
+INTER_CASE_DELAY_SECONDS = 3
 
 
 def check_evidence(case: dict, final_state: dict) -> bool | None:
@@ -75,6 +81,9 @@ def main() -> None:
     results = []
     for i, case in enumerate(cases, start=1):
         print(f"[{i}/{len(cases)}] {case['case_id']} (expected: {case['expected_category']})...")
+
+        if i > 1:
+            time.sleep(INTER_CASE_DELAY_SECONDS)
 
         initial_state = {
             "protocol_id": case["protocol_id"],

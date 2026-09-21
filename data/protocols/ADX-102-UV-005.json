@@ -1,0 +1,70 @@
+{
+  "protocol_id": "ADX-102-UV-005",
+  "visit_schedule": [
+    {
+      "visit": "Visit 1 (Screening/Randomization)",
+      "target_day": 1,
+      "window_days": 0
+    },
+    {
+      "visit": "Visit 2 (Day 4)",
+      "target_day": 4,
+      "window_days": 1
+    },
+    {
+      "visit": "Visit 3 (Week 1)",
+      "target_day": 8,
+      "window_days": 1
+    },
+    {
+      "visit": "Visit 4 (Week 2)",
+      "target_day": 15,
+      "window_days": 2
+    },
+    {
+      "visit": "Visit 5 (Week 3)",
+      "target_day": 22,
+      "window_days": 2
+    },
+    {
+      "visit": "Visit 6 (Week 4/EOT/ET)",
+      "target_day": 29,
+      "window_days": 3
+    },
+    {
+      "visit": "Visit 7 (Week 5/EOS - telephone follow-up)",
+      "target_day": 36,
+      "window_days": 3
+    }
+  ],
+  "eligibility_criteria": {
+    "inclusion": [
+      "Subject is willing and able to comply with the protocol requirements, has gone through the consent process and has signed an approved informed consent form.",
+      "Male or female subjects aged \u2265 18 years and \u2264 85 years.",
+      "Subjects with acute endogenous non-infectious anterior uveitis with onset of symptoms within the previous 2 weeks. Subjects experiencing a bilateral episode of anterior uveitis may be eligible for study in both eyes. Evaluations for selective infectious etiologies, including but not limited to Syphilis, Tuberculosis (if indicated), Herpes Simplex, Herpes Zoster, CMV, Lyme Disease or other suspected infectious etiology, must be performed during the screening period or within 3 months of randomization.",
+      "Presence of 6-50 anterior chamber cells within one field of view as measured with a slit lamp microscope (Grade 1+ to Grade 3+, Appendix 1) in the study eye(s).",
+      "Subjects must have pachymetry corrected IOP <21 mmHg at baseline and non-glaucomatous cups in the opinion of the investigator with non-glaucomatous visual fields if available, and may only administer a maximum of 1 topical medication to control IOP in the study eye.",
+      "Best corrected visual acuity (BCVA) better than or equal to 35 letters in the study eye and 65 letters in the non-study eye using ETDRS testing. Note: this criteria is also applicable for a subject with bilateral uveitis.",
+      "Females of childbearing potential must be using or willing to use a medically acceptable method (as defined by the Investigator) of birth control. Women not of childbearing potential are defined as women who are either surgically sterile or postmenopausal. Postmenopausal women are defined as women with cessation of menstruation for 12 consecutive months prior to signing of the informed consent form."
+    ],
+    "exclusion": [
+      "Have severe/serious ocular pathology in the study eye(s) which may preclude study completion, in the judgement of the Investigator.",
+      "Any medical condition or clinical laboratory test which in the judgment of the Investigator makes the subject unsuitable for the study.",
+      "Currently or within past 5 years, have a history of malignancy other than successfully treated squamous or basal cell carcinoma of the skin or successfully treated in situ cervical cancer.",
+      "Active intermediate or posterior uveitis in the study eye(s). Note: a subject with isolated macular edema without evidence of active intermediate or posterior uveitis is eligible for enrolment.",
+      "Known or observed mild to severe (1-4+) fibrinoid reaction.",
+      "Previous anterior uveitis episode in the study eye \u2264 4 weeks prior to Visit 1.",
+      "Cataract and intraocular lens (IOL) implantation surgery or corneal transplantation surgery in the study eye(s) within the past 3 months prior to Visit 1, or subjects who may require penetrating intraocular surgery in the study eye(s) during the study (with exceptions for documented complete clearing of inflammation post-surgery).",
+      "Oral corticosteroid within the past 14 days prior to Visit 1.",
+      "Topical ocular corticosteroid treatment in the study eye within the past 14 days prior to Visit 1 (Maximum of 3 doses of topical ocular steroid in the study eye in the 7 days prior to Visit 1 is permitted).",
+      "Intravitreal corticosteroid treatment in the study eye within the past 4 months prior to Visit 1.",
+      "Sub-Tenon corticosteroid treatment in the study eye within the past 3 months prior to Visit 1.",
+      "Prescribed nonsteroidal anti-inflammatory agents or immunosuppressive agents, unless the dose has been stable for the last 6 weeks prior to Visit 1 and no change in dosing is anticipated for the duration of the study.",
+      "Systemic immunomodulatory agents (e.g. azathioprine, methotrexate, mycophenolate mofetil), unless the dose has been stable for the last 6 weeks prior to Visit 1 and no change in dosing is anticipated for the duration of the study.",
+      "Pregnant or lactating female, or female of childbearing potential and using inadequate birth control methods.",
+      "Have participated in another investigational device or drug study within 30 days prior to Visit 1.",
+      "Participation in a prior ADX-102 study."
+    ]
+  },
+  "consent_versions": []
+}

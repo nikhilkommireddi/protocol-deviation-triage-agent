@@ -70,9 +70,16 @@ impact that require expedited IRB/sponsor reporting.
   unless it caused a real missed safety check, in which case it's `major`.
 - *vs. technical* — `major` is about consequence (someone could be harmed,
   data compromised); `technical` is about a systems/equipment root cause
-  with no such consequence reaching a subject. A temperature excursion is
-  `technical` unless out-of-spec product actually reached a subject, in
-  which case it's `major`.
+  with no such consequence reaching a subject. "Reached a subject" means
+  the subject actually received something different from what the
+  protocol specified as a result of the failure — out-of-spec product
+  actually administered, the wrong kit/randomization assignment actually
+  dispensed — not merely that the failure happened at a point in the
+  process near the subject. A temperature excursion or kit-assignment
+  mismatch caught and corrected before dispensing/dosing stays `technical`;
+  once the subject is actually dosed or dispensed the wrong assignment, the
+  uncertainty about whether they were harmed is itself the reason it
+  escalates to `major` — this is a precautionary threshold, not a proof-of-harm one.
 - *vs. administrative* — if a documentation gap changed what a subject was
   told or could decide (e.g. an outdated consent form withheld new safety
   information), that's `major`, not `administrative`.

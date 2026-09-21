@@ -140,8 +140,8 @@
     "deviation_date": "2024-07-13",
     "discovery_date": "2024-07-14",
     "text": "An IVRS system outage at Site 113 resulted in Subject 113-9013 being dispensed an incorrect study kit assignment.",
-    "expected_category": "technical",
-    "is_boundary_case": false
+    "expected_category": "major",
+    "is_boundary_case": true
   },
   {
     "case_id": "EVAL-014",

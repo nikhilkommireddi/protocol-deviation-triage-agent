@@ -59,3 +59,36 @@ class MemoUpdate(BaseModel):
 class ReviewSubmission(BaseModel):
     memo: MemoUpdate
     status: Literal["approved", "rejected"]
+
+
+class VisitScheduleEntry(BaseModel):
+    visit: str
+    target_day: int
+    window_days: int
+
+
+class EligibilityCriteria(BaseModel):
+    inclusion: list[str]
+    exclusion: list[str]
+
+
+class ConsentVersionEntry(BaseModel):
+    version: str
+    effective_date: str
+    is_current: bool
+    superseded_date: str
+    summary: str
+    material_safety_change: bool
+
+
+class ProtocolExtraction(BaseModel):
+    detected_protocol_id: str
+    visit_schedule: list[VisitScheduleEntry]
+    eligibility_criteria: EligibilityCriteria
+    consent_versions: list[ConsentVersionEntry]
+
+
+class ProtocolSaveRequest(BaseModel):
+    visit_schedule: list[VisitScheduleEntry]
+    eligibility_criteria: EligibilityCriteria
+    consent_versions: list[ConsentVersionEntry]
