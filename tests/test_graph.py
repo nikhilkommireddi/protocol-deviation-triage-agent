@@ -43,6 +43,27 @@ class TestGraphNodes(unittest.TestCase):
         self.assertEqual(record["protocol_id"], "PDA-2024-001")
         self.assertEqual(record["status"], "ingested")
 
+        events = db.list_audit_events(result["report_id"])
+        self.assertEqual(len(events), 1)
+        self.assertEqual(events[0]["event_type"], "submitted")
+
+    def test_ingest_node_attributes_submitter_when_provided(self):
+        state = {
+            "protocol_id": "PDA-2024-001",
+            "site_id": "001",
+            "subject_id": "001-1234",
+            "deviation_date": "2024-05-01",
+            "discovery_date": "2024-05-02",
+            "raw_text": "text",
+            "submitted_by_name": "Alex Coordinator",
+            "submitted_by_role": "Site Coordinator",
+        }
+        result = graph.ingest_node(state)
+
+        events = db.list_audit_events(result["report_id"])
+        self.assertEqual(events[0]["actor_name"], "Alex Coordinator")
+        self.assertEqual(events[0]["actor_role"], "Site Coordinator")
+
     @patch("app.graph.predict_category")
     def test_classify_node(self, mock_predict):
         mock_predict.return_value = ("major", 0.97)
@@ -56,6 +77,11 @@ class TestGraphNodes(unittest.TestCase):
         self.assertEqual(result["status"], "classified")
         record = db.get_report(ingested["report_id"])
         self.assertEqual(record["category"], "major")
+
+        events = db.list_audit_events(ingested["report_id"])
+        classify_events = [e for e in events if e["event_type"] == "ai_classified"]
+        self.assertEqual(len(classify_events), 1)
+        self.assertIn("major", classify_events[0]["description"])
 
     def test_capa_lookup_node_reads_real_guidance(self):
         with open("data/capa_guidance.json", encoding="utf-8") as f:
@@ -102,6 +128,8 @@ class TestGraphNodes(unittest.TestCase):
         result = graph.mock_queue_node(state)
 
         self.assertEqual(result["status"], "queued")
+        events = db.list_audit_events(ingested["report_id"])
+        self.assertTrue(any(e["event_type"] == "queued" for e in events))
         record = db.get_report(ingested["report_id"])
         self.assertEqual(record["status"], "queued")
 
@@ -246,6 +274,11 @@ class TestGraphNodes(unittest.TestCase):
         record = db.get_report(ingested["report_id"])
         self.assertEqual(record["category"], "major")
 
+        events = db.list_audit_events(ingested["report_id"])
+        adjudication_events = [e for e in events if e["event_type"] == "ai_adjudicated"]
+        self.assertEqual(len(adjudication_events), 1)
+        self.assertIn("overrode", adjudication_events[0]["description"])
+
     @patch("app.graph.adjudicate")
     def test_adjudicate_node_retry_increments_count(self, mock_adjudicate):
         mock_adjudicate.return_value = {
@@ -290,6 +323,9 @@ class TestGraphNodes(unittest.TestCase):
         self.assertEqual(result["status"], "verified")
         record = db.get_report(ingested["report_id"])
         self.assertEqual(record["status"], "verified")
+
+        events = db.list_audit_events(ingested["report_id"])
+        self.assertTrue(any(e["event_type"] == "ai_verified" for e in events))
 
     def test_route_after_verify_passes(self):
         state = {"verification": {"passes": True, "issues": []}, "retry_count": 0}

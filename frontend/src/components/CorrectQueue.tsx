@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { CheckCircle2, Circle, Wrench } from "lucide-react";
 import { listReports, updateCapaActionsStatus } from "../api";
-import type { TriageResult } from "../types";
+import type { DemoUser, TriageResult } from "../types";
 import { categoryBadgeClass } from "../lib/badges";
 import { useAuth } from "../context/AuthContext";
 import { can } from "../lib/permissions";
@@ -71,6 +71,7 @@ export function CorrectQueue() {
                     key={r.report_id}
                     report={r}
                     canEdit={canEdit}
+                    user={user}
                     onUpdated={handleUpdated}
                   />
                 ))}
@@ -86,6 +87,7 @@ export function CorrectQueue() {
                     key={r.report_id}
                     report={r}
                     canEdit={canEdit}
+                    user={user}
                     onUpdated={handleUpdated}
                   />
                 ))}
@@ -101,10 +103,12 @@ export function CorrectQueue() {
 function CorrectCard({
   report,
   canEdit,
+  user,
   onUpdated,
 }: {
   report: TriageResult;
   canEdit: boolean;
+  user: DemoUser | null;
   onUpdated: (updated: TriageResult) => void;
 }) {
   const actions = report.memo?.recommended_capa_actions ?? [];
@@ -122,7 +126,12 @@ function CorrectCard({
     setStatus(next);
     setSaving(true);
     try {
-      const updated = await updateCapaActionsStatus(report.report_id, next);
+      const updated = await updateCapaActionsStatus(
+        report.report_id,
+        next,
+        user?.name,
+        user?.role,
+      );
       onUpdated(updated);
     } catch {
       setStatus(previous);

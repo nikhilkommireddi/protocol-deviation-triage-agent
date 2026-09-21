@@ -16,6 +16,7 @@ import {
 import { submitReport } from "../../api";
 import { categoryBadgeClass } from "../../lib/badges";
 import { generateReportPdf } from "../../lib/pdfReport";
+import { useAuth } from "../../context/AuthContext";
 import { ReasoningTrace } from "../ReasoningTrace";
 import type { TriageResult } from "../../types";
 import type { WizardFields } from "./SubmitWizard";
@@ -49,6 +50,7 @@ const STEP_INTERVAL_MS = 3200;
 const WORKFLOW_STEPS = ["Submitted", "Classified", "CAPA Lookup", "Memo Drafted", "Queued for Review"];
 
 export function StepTriage({ fields, onSubmitted, onStartOver }: StepTriageProps) {
+  const { user } = useAuth();
   const [visualStep, setVisualStep] = useState(0);
   const [result, setResult] = useState<TriageResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -69,6 +71,8 @@ export function StepTriage({ fields, onSubmitted, onStartOver }: StepTriageProps
       deviation_date: fields.deviationDate,
       discovery_date: fields.discoveryDate,
       text: fields.text,
+      submitted_by_name: user?.name,
+      submitted_by_role: user?.role,
     })
       .then((res) => {
         clearInterval(interval);

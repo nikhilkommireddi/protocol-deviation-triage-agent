@@ -7,11 +7,19 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from app import db, protocol_lookup
-from app.graph import CAPA_GUIDANCE_PATH, LABELS_PATH, TriageAgentError, deliver_to_queue, graph
+from app.graph import (
+    CAPA_GUIDANCE_PATH,
+    LABELS_PATH,
+    TriageAgentError,
+    _log_audit,
+    deliver_to_queue,
+    graph,
+)
 from app.pdf_extract import extract_from_pdf
 from app.protocol_extract import extract_protocol_from_pdf, to_storage_format
 from app.retry import call_with_retries
 from app.schemas import (
+    AuditEvent,
     CapaActionsUpdate,
     DeviationSubmission,
     ExtractedFields,
@@ -69,6 +77,8 @@ def submit_report(submission: DeviationSubmission):
         "deviation_date": submission.deviation_date,
         "discovery_date": submission.discovery_date,
         "raw_text": submission.text,
+        "submitted_by_name": submission.submitted_by_name,
+        "submitted_by_role": submission.submitted_by_role,
     }
     try:
         result_state = graph.invoke(initial_state)
@@ -151,7 +161,26 @@ def review_report(report_id: str, submission: ReviewSubmission):
     record = db.get_report(report_id)
     if record is None:
         raise HTTPException(status_code=404, detail="report not found")
-    db.update_report(report_id, {"memo": submission.memo.model_dump(), "status": submission.status})
+
+    fields_to_update = {"memo": submission.memo.model_dump(), "status": submission.status}
+    if submission.category and submission.category != record["category"]:
+        fields_to_update["category"] = submission.category
+        _log_audit(
+            report_id,
+            "classification_changed",
+            f"Reviewer changed classification: {record['category']} -> {submission.category}",
+            actor_name=submission.actor_name,
+            actor_role=submission.actor_role,
+        )
+    db.update_report(report_id, fields_to_update)
+
+    _log_audit(
+        report_id,
+        "reviewed",
+        "Approved" if submission.status == "approved" else "Rejected",
+        actor_name=submission.actor_name,
+        actor_role=submission.actor_role,
+    )
     return db.get_report(report_id)
 
 
@@ -161,7 +190,25 @@ def update_capa_actions(report_id: str, submission: CapaActionsUpdate):
     if record is None:
         raise HTTPException(status_code=404, detail="report not found")
     db.update_report(report_id, {"capa_actions_status": submission.actions_status})
+
+    completed = sum(1 for done in submission.actions_status if done)
+    total = len(submission.actions_status)
+    _log_audit(
+        report_id,
+        "capa_updated",
+        f"CAPA actions updated ({completed}/{total} complete)",
+        actor_name=submission.actor_name,
+        actor_role=submission.actor_role,
+    )
     return db.get_report(report_id)
+
+
+@app.get("/reports/{report_id}/audit", response_model=list[AuditEvent])
+def get_audit_trail(report_id: str):
+    record = db.get_report(report_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="report not found")
+    return db.list_audit_events(report_id)
 
 
 @app.get("/reference", response_model=ReferenceData)

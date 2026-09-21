@@ -51,6 +51,19 @@ CREATE TABLE IF NOT EXISTS users (
 )
 """
 
+AUDIT_SCHEMA = """
+CREATE TABLE IF NOT EXISTS audit_events (
+    event_id TEXT PRIMARY KEY,
+    report_id TEXT NOT NULL,
+    event_type TEXT NOT NULL,
+    description TEXT NOT NULL,
+    actor_name TEXT,
+    actor_role TEXT,
+    details TEXT,
+    created_at TEXT NOT NULL
+)
+"""
+
 SITES_SCHEMA = """
 CREATE TABLE IF NOT EXISTS sites (
     site_id TEXT PRIMARY KEY,
@@ -75,6 +88,7 @@ def init_db(db_path: Path | str | None = None) -> None:
         conn.execute(SCHEMA)
         conn.execute(USERS_SCHEMA)
         conn.execute(SITES_SCHEMA)
+        conn.execute(AUDIT_SCHEMA)
         conn.commit()
         _seed_defaults_if_empty(conn)
     finally:
@@ -351,5 +365,56 @@ def delete_site(site_id: str, db_path: Path | str | None = None) -> None:
     try:
         conn.execute("DELETE FROM sites WHERE site_id = ?", (site_id,))
         conn.commit()
+    finally:
+        conn.close()
+
+
+# --- Audit trail ---------------------------------------------------------------
+# Append-only by construction: no update/delete function is defined for this
+# table. Audit history must be immutable from the frontend -- there's simply
+# no code path that could change or remove a row once written.
+
+
+def insert_audit_event(record: dict, db_path: Path | str | None = None) -> dict:
+    conn = get_connection(db_path)
+    try:
+        now = _now()
+        event_id = str(uuid.uuid4())
+        details = record.get("details")
+        conn.execute(
+            "INSERT INTO audit_events "
+            "(event_id, report_id, event_type, description, actor_name, actor_role, details, created_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                event_id,
+                record["report_id"],
+                record["event_type"],
+                record["description"],
+                record.get("actor_name"),
+                record.get("actor_role"),
+                json.dumps(details) if details is not None else None,
+                now,
+            ),
+        )
+        conn.commit()
+        return {**record, "event_id": event_id, "created_at": now}
+    finally:
+        conn.close()
+
+
+def list_audit_events(report_id: str, db_path: Path | str | None = None) -> list[dict]:
+    conn = get_connection(db_path)
+    try:
+        rows = conn.execute(
+            "SELECT * FROM audit_events WHERE report_id = ? ORDER BY created_at ASC",
+            (report_id,),
+        ).fetchall()
+        events = []
+        for row in rows:
+            d = dict(row)
+            if d.get("details"):
+                d["details"] = json.loads(d["details"])
+            events.append(d)
+        return events
     finally:
         conn.close()

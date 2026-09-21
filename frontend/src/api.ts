@@ -1,4 +1,5 @@
 import type {
+  AuditEvent,
   DeviationSubmission,
   ExtractedFields,
   ManagedSite,
@@ -72,11 +73,21 @@ export function reviewReport(
 export function updateCapaActionsStatus(
   reportId: string,
   actionsStatus: boolean[],
+  actorName?: string,
+  actorRole?: string,
 ): Promise<TriageResult> {
   return request<TriageResult>(`/reports/${reportId}/capa-actions`, {
     method: "POST",
-    body: JSON.stringify({ actions_status: actionsStatus }),
+    body: JSON.stringify({
+      actions_status: actionsStatus,
+      actor_name: actorName,
+      actor_role: actorRole,
+    }),
   });
+}
+
+export function getAuditTrail(reportId: string): Promise<AuditEvent[]> {
+  return request<AuditEvent[]>(`/reports/${reportId}/audit`);
 }
 
 export function getReferenceData(): Promise<ReferenceData> {

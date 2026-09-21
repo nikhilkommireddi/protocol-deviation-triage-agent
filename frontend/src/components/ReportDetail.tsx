@@ -4,7 +4,11 @@ import { getReport, reviewReport } from "../api";
 import type { Memo, ReviewDecision, TriageResult } from "../types";
 import { categoryBadgeClass, statusBadgeClass } from "../lib/badges";
 import { generateReportPdf } from "../lib/pdfReport";
+import { useAuth } from "../context/AuthContext";
+import { AuditTrail } from "./AuditTrail";
 import { ReasoningTrace } from "./ReasoningTrace";
+
+const CATEGORIES = ["major", "minor", "technical", "administrative", "unreported"];
 
 interface ReportDetailProps {
   reportId: string;
@@ -32,6 +36,7 @@ export function ReportDetail({
   canEdit = true,
   canDecide = true,
 }: ReportDetailProps) {
+  const { user } = useAuth();
   const [record, setRecord] = useState<TriageResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +44,7 @@ export function ReportDetail({
 
   const [memo, setMemo] = useState<Memo>(EMPTY_MEMO);
   const [actionsText, setActionsText] = useState("");
+  const [category, setCategory] = useState<string>("");
 
   useEffect(() => {
     let cancelled = false;
@@ -48,6 +54,7 @@ export function ReportDetail({
       .then((r) => {
         if (cancelled) return;
         setRecord(r);
+        if (r.category) setCategory(r.category);
         if (r.memo) {
           setMemo(r.memo);
           setActionsText(r.memo.recommended_capa_actions.join("\n"));
@@ -75,7 +82,13 @@ export function ReportDetail({
           .map((line) => line.trim())
           .filter(Boolean),
       };
-      const updated = await reviewReport(reportId, { memo: editedMemo, status });
+      const updated = await reviewReport(reportId, {
+        memo: editedMemo,
+        status,
+        category: category || undefined,
+        actor_name: user?.name,
+        actor_role: user?.role,
+      });
       setRecord(updated);
       onReviewed();
     } catch (err) {
@@ -122,9 +135,24 @@ export function ReportDetail({
           <h3 className="font-medium text-slate-800 mb-1">Classification</h3>
           {record.category ? (
             <>
-              <p className="text-sm">
-                Category: <span className="font-semibold">{record.category}</span>
-              </p>
+              <label className="block text-sm mb-1">
+                Category:{" "}
+                {canEdit ? (
+                  <select
+                    className="input inline-block w-auto ml-1"
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                  >
+                    {CATEGORIES.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <span className="font-semibold">{record.category}</span>
+                )}
+              </label>
               <p className="text-sm">Confidence: {record.confidence?.toFixed(2)}</p>
               {(record.confidence ?? 1) < 0.6 && (
                 <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1 mt-2 flex items-center gap-1.5">
@@ -274,6 +302,8 @@ export function ReportDetail({
       ) : (
         <p className="text-slate-500">Memo not yet drafted for this report.</p>
       )}
+
+      <AuditTrail reportId={record.report_id} />
     </div>
   );
 }

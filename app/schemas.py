@@ -12,6 +12,8 @@ class DeviationSubmission(BaseModel):
     deviation_date: str
     discovery_date: str
     text: str
+    submitted_by_name: str | None = None
+    submitted_by_role: str | None = None
 
 
 class ExtractedFields(BaseModel):
@@ -60,10 +62,26 @@ class MemoUpdate(BaseModel):
 class ReviewSubmission(BaseModel):
     memo: MemoUpdate
     status: Literal["approved", "rejected"]
+    category: str | None = None
+    actor_name: str | None = None
+    actor_role: str | None = None
 
 
 class CapaActionsUpdate(BaseModel):
     actions_status: list[bool]
+    actor_name: str | None = None
+    actor_role: str | None = None
+
+
+class AuditEvent(BaseModel):
+    event_id: str
+    report_id: str
+    event_type: str
+    description: str
+    actor_name: str | None = None
+    actor_role: str | None = None
+    details: dict | None = None
+    created_at: str
 
 
 UserRole = Literal["site_coordinator", "cra", "quality_reviewer", "administrator"]

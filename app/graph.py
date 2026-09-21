@@ -46,6 +46,26 @@ class TriageAgentError(Exception):
     couldn't complete this triage right now, which is different from a bug."""
 
 
+def _log_audit(
+    report_id: str,
+    event_type: str,
+    description: str,
+    actor_name: str | None = None,
+    actor_role: str | None = None,
+    details: dict | None = None,
+) -> None:
+    db.insert_audit_event(
+        {
+            "report_id": report_id,
+            "event_type": event_type,
+            "description": description,
+            "actor_name": actor_name,
+            "actor_role": actor_role,
+            "details": details,
+        }
+    )
+
+
 MODEL_DIR = Path("models/deviation-classifier")
 CAPA_GUIDANCE_PATH = Path("data/capa_guidance.json")
 LABELS_PATH = Path("data/labels.md")
@@ -77,6 +97,8 @@ class TriageState(TypedDict, total=False):
     deviation_date: str
     discovery_date: str
     raw_text: str
+    submitted_by_name: str
+    submitted_by_role: str
     report_id: str
     text: str
     category: str
@@ -596,6 +618,15 @@ def ingest_node(state: TriageState) -> dict:
         "status": "ingested",
     }
     db.insert_report(record)
+    submitter_name = state.get("submitted_by_name")
+    submitter_role = state.get("submitted_by_role")
+    _log_audit(
+        report_id,
+        "submitted",
+        "Deviation submitted" if submitter_name else "Deviation submitted (submitter not provided)",
+        actor_name=submitter_name,
+        actor_role=submitter_role,
+    )
     return {"report_id": report_id, "text": text, "status": "ingested"}
 
 
@@ -605,6 +636,13 @@ def classify_node(state: TriageState) -> dict:
     except Exception as exc:
         raise TriageAgentError(f"Classifier Agent failed: {exc}") from exc
     db.update_report(state["report_id"], {"category": category, "confidence": confidence, "status": "classified"})
+    _log_audit(
+        state["report_id"],
+        "ai_classified",
+        f"AI classification generated: {category} (confidence {confidence:.0%})",
+        actor_name="Classifier Agent",
+        actor_role="AI System",
+    )
     return {"category": category, "confidence": confidence, "status": "classified"}
 
 
@@ -719,6 +757,20 @@ def adjudicate_node(state: TriageState) -> dict:
             "status": "adjudicated",
         },
     )
+    if result["overridden"]:
+        description = (
+            f"AI overrode classification: {result['classifier_category']} -> "
+            f"{final_category} ({result['override_reason']})"
+        )
+    else:
+        description = f"AI confirmed classification: {final_category}"
+    _log_audit(
+        state["report_id"],
+        "ai_adjudicated",
+        description,
+        actor_name="Adjudication Agent",
+        actor_role="AI System",
+    )
     return {
         "category": final_category,
         "confidence": result["confidence"],
@@ -762,6 +814,17 @@ def verify_node(state: TriageState) -> dict:
         raise TriageAgentError(f"Verification Agent failed: {exc}") from exc
     status = "verified" if result["passes"] else "verification_flagged"
     db.update_report(state["report_id"], {"verification": result, "status": status})
+    if result["passes"]:
+        description = "AI verification passed"
+    else:
+        description = f"AI verification flagged an issue: {'; '.join(result['issues'])}"
+    _log_audit(
+        state["report_id"],
+        "ai_verified",
+        description,
+        actor_name="Verification Agent",
+        actor_role="AI System",
+    )
     return {"verification": result, "status": status}
 
 
@@ -775,6 +838,7 @@ def route_after_verify(state: TriageState) -> str:
 
 def mock_queue_node(state: TriageState) -> dict:
     result = deliver_to_queue({"report_id": state["report_id"]})
+    _log_audit(state["report_id"], "queued", "Queued for human review")
     return {"status": result["status"]}
 
 

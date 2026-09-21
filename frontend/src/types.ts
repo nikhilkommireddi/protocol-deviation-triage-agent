@@ -52,6 +52,8 @@ export interface DeviationSubmission {
   deviation_date: string;
   discovery_date: string;
   text: string;
+  submitted_by_name?: string;
+  submitted_by_role?: string;
 }
 
 export interface ExtractedFields {
@@ -140,9 +142,23 @@ export type ReviewDecision = "approved" | "rejected";
 export interface ReviewSubmission {
   memo: Memo;
   status: ReviewDecision;
+  category?: string;
+  actor_name?: string;
+  actor_role?: string;
 }
 
 export interface ReferenceData {
   labels_markdown: string;
   capa_guidance: Record<string, CapaGuidance>;
+}
+
+export interface AuditEvent {
+  event_id: string;
+  report_id: string;
+  event_type: string;
+  description: string;
+  actor_name: string | null;
+  actor_role: string | null;
+  details: Record<string, unknown> | null;
+  created_at: string;
 }

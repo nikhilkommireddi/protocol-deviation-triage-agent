@@ -151,6 +151,100 @@ class TestReferenceAndCapaActionsEndpoints(unittest.TestCase):
             )
         self.assertEqual(response.status_code, 404)
 
+    def test_update_capa_actions_logs_audit_event(self):
+        self._insert_report("r1")
+        with TestClient(app) as client:
+            client.post(
+                "/reports/r1/capa-actions",
+                json={
+                    "actions_status": [True, False],
+                    "actor_name": "Jordan CRA",
+                    "actor_role": "CRA",
+                },
+            )
+        events = db.list_audit_events("r1")
+        capa_events = [e for e in events if e["event_type"] == "capa_updated"]
+        self.assertEqual(len(capa_events), 1)
+        self.assertIn("1/2", capa_events[0]["description"])
+        self.assertEqual(capa_events[0]["actor_name"], "Jordan CRA")
+
+    def _minimal_memo(self):
+        return {
+            "summary": "s",
+            "root_cause_narrative": "r",
+            "regulatory_citation": "c",
+            "recommended_capa_actions": ["a"],
+            "requires_expedited_reporting": False,
+            "responsible_party": "QA",
+            "target_resolution_date": "2024-06-01",
+        }
+
+    def test_review_report_logs_classification_change_when_category_differs(self):
+        self._insert_report("r1", status="drafted")
+        db.update_report("r1", {"category": "administrative"})
+
+        with TestClient(app) as client:
+            response = client.post(
+                "/reports/r1/review",
+                json={
+                    "memo": self._minimal_memo(),
+                    "status": "approved",
+                    "category": "major",
+                    "actor_name": "Sam Reviewer",
+                    "actor_role": "Quality Reviewer",
+                },
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["category"], "major")
+
+        events = db.list_audit_events("r1")
+        change_events = [e for e in events if e["event_type"] == "classification_changed"]
+        self.assertEqual(len(change_events), 1)
+        self.assertIn("administrative -> major", change_events[0]["description"])
+        self.assertEqual(change_events[0]["actor_name"], "Sam Reviewer")
+
+        reviewed_events = [e for e in events if e["event_type"] == "reviewed"]
+        self.assertEqual(len(reviewed_events), 1)
+        self.assertEqual(reviewed_events[0]["description"], "Approved")
+
+    def test_review_report_no_classification_change_event_when_category_unchanged(self):
+        self._insert_report("r1", status="drafted")
+        db.update_report("r1", {"category": "major"})
+
+        with TestClient(app) as client:
+            client.post(
+                "/reports/r1/review",
+                json={"memo": self._minimal_memo(), "status": "rejected", "category": "major"},
+            )
+
+        events = db.list_audit_events("r1")
+        self.assertFalse(any(e["event_type"] == "classification_changed" for e in events))
+        self.assertTrue(any(e["event_type"] == "reviewed" for e in events))
+
+    def test_get_audit_trail_returns_events_in_order(self):
+        self._insert_report("r1", status="drafted")
+        db.update_report("r1", {"category": "minor"})
+
+        with TestClient(app) as client:
+            client.post(
+                "/reports/r1/capa-actions", json={"actions_status": [False]}
+            )
+            client.post(
+                "/reports/r1/review",
+                json={"memo": self._minimal_memo(), "status": "approved"},
+            )
+            response = client.get("/reports/r1/audit")
+
+        self.assertEqual(response.status_code, 200)
+        events = response.json()
+        self.assertEqual([e["event_type"] for e in events], ["capa_updated", "reviewed"])
+
+    def test_get_audit_trail_404_for_missing_report(self):
+        with TestClient(app) as client:
+            response = client.get("/reports/does-not-exist/audit")
+        self.assertEqual(response.status_code, 404)
+
 
 class TestUserAndSiteEndpoints(unittest.TestCase):
     def setUp(self):
