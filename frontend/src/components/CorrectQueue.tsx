@@ -3,6 +3,8 @@ import { CheckCircle2, Circle, Wrench } from "lucide-react";
 import { listReports, updateCapaActionsStatus } from "../api";
 import type { TriageResult } from "../types";
 import { categoryBadgeClass } from "../lib/badges";
+import { useAuth } from "../context/AuthContext";
+import { can } from "../lib/permissions";
 import { PageHeader } from "./PageHeader";
 
 function isFullyCorrected(r: TriageResult): boolean {
@@ -13,6 +15,8 @@ function isFullyCorrected(r: TriageResult): boolean {
 }
 
 export function CorrectQueue() {
+  const { user } = useAuth();
+  const canEdit = can(user, "correct.edit");
   const [reports, setReports] = useState<TriageResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -63,7 +67,12 @@ export function CorrectQueue() {
               <h3 className="text-sm font-medium text-slate-500 mb-3">Open ({open.length})</h3>
               <div className="space-y-3">
                 {open.map((r) => (
-                  <CorrectCard key={r.report_id} report={r} onUpdated={handleUpdated} />
+                  <CorrectCard
+                    key={r.report_id}
+                    report={r}
+                    canEdit={canEdit}
+                    onUpdated={handleUpdated}
+                  />
                 ))}
               </div>
             </div>
@@ -73,7 +82,12 @@ export function CorrectQueue() {
               <h3 className="text-sm font-medium text-slate-500 mb-3">Closed ({closed.length})</h3>
               <div className="space-y-3">
                 {closed.map((r) => (
-                  <CorrectCard key={r.report_id} report={r} onUpdated={handleUpdated} />
+                  <CorrectCard
+                    key={r.report_id}
+                    report={r}
+                    canEdit={canEdit}
+                    onUpdated={handleUpdated}
+                  />
                 ))}
               </div>
             </div>
@@ -86,9 +100,11 @@ export function CorrectQueue() {
 
 function CorrectCard({
   report,
+  canEdit,
   onUpdated,
 }: {
   report: TriageResult;
+  canEdit: boolean;
   onUpdated: (updated: TriageResult) => void;
 }) {
   const actions = report.memo?.recommended_capa_actions ?? [];
@@ -126,9 +142,12 @@ function CorrectCard({
           </span>
           <span className={categoryBadgeClass(report.category)}>{report.category}</span>
         </div>
-        <span className={closed ? "badge badge-green" : "badge badge-amber"}>
-          {closed ? "Closed" : "Open"}
-        </span>
+        <div className="flex items-center gap-2">
+          {!canEdit && <span className="text-[10px] uppercase tracking-wide text-slate-400">View only</span>}
+          <span className={closed ? "badge badge-green" : "badge badge-amber"}>
+            {closed ? "Closed" : "Open"}
+          </span>
+        </div>
       </div>
       {actions.length === 0 ? (
         <p className="text-sm text-slate-400">No CAPA actions recorded for this memo.</p>
@@ -139,8 +158,8 @@ function CorrectCard({
               <button
                 type="button"
                 onClick={() => toggle(i)}
-                disabled={saving}
-                className="mt-0.5 shrink-0"
+                disabled={saving || !canEdit}
+                className={"mt-0.5 shrink-0 " + (canEdit ? "" : "cursor-not-allowed")}
               >
                 {status[i] ? (
                   <CheckCircle2 className="w-4 h-4 text-green-600" />

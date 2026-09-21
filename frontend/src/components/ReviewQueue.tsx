@@ -3,6 +3,8 @@ import { CheckCircle2, ClipboardList, Clock, Search, XCircle } from "lucide-reac
 import { listReports } from "../api";
 import type { TriageResult } from "../types";
 import { categoryBadgeClass, statusBadgeClass } from "../lib/badges";
+import { useAuth } from "../context/AuthContext";
+import { can } from "../lib/permissions";
 import { PageHeader } from "./PageHeader";
 import { ReportDetail } from "./ReportDetail";
 import { StatCard } from "./StatCard";
@@ -10,6 +12,7 @@ import { StatCard } from "./StatCard";
 const PAGE_SIZE = 10;
 
 export function ReviewQueue() {
+  const { user } = useAuth();
   const [reports, setReports] = useState<TriageResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -18,11 +21,18 @@ export function ReviewQueue() {
   const [page, setPage] = useState(0);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
+  const canDecide = can(user, "review.decide");
+  const canEdit = can(user, "review.edit");
+
   async function refresh() {
     setLoading(true);
     setError(null);
     try {
-      const data = await listReports();
+      const all = await listReports();
+      // Site Coordinators only see their own site's deviations. This is a
+      // demo-only client-side filter -- the backend returns every report to
+      // anyone who calls it directly; there is no real enforcement here.
+      const data = user?.siteId ? all.filter((r) => r.site_id === user.siteId) : all;
       setReports(data);
       setStatusFilter((prev) => {
         const allStatuses = new Set(data.map((r) => r.status));
@@ -226,6 +236,8 @@ export function ReviewQueue() {
           {selectedId && (
             <ReportDetail
               reportId={selectedId}
+              canEdit={canEdit}
+              canDecide={canDecide}
               onReviewed={() => {
                 refresh();
               }}

@@ -3,19 +3,25 @@ import { User } from "lucide-react";
 import { listReports } from "../api";
 import type { TriageResult } from "../types";
 import { categoryBadgeClass, statusBadgeClass } from "../lib/badges";
+import { useAuth } from "../context/AuthContext";
 import { PageHeader } from "./PageHeader";
 
 export function Subjects() {
+  const { user } = useAuth();
   const [reports, setReports] = useState<TriageResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     listReports()
-      .then(setReports)
+      .then((all) => {
+        // Demo-only client-side scoping for Site Coordinators -- see the
+        // same note in ReviewQueue.tsx.
+        setReports(user?.siteId ? all.filter((r) => r.site_id === user.siteId) : all);
+      })
       .catch((err) => setError(err instanceof Error ? err.message : "Failed to load reports."))
       .finally(() => setLoading(false));
-  }, []);
+  }, [user]);
 
   const bySubject = useMemo(() => {
     const groups = new Map<string, TriageResult[]>();

@@ -6,9 +6,12 @@ import {
   ShieldAlert,
   ShieldCheck,
   UserCircle,
+  UserCog,
   Users,
   Wrench,
 } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
+import { can } from "../lib/permissions";
 
 export type View =
   | "submit"
@@ -17,7 +20,8 @@ export type View =
   | "analytics"
   | "safety"
   | "rules"
-  | "subjects";
+  | "subjects"
+  | "admin";
 
 interface SidebarProps {
   active: View;
@@ -25,6 +29,8 @@ interface SidebarProps {
 }
 
 export function Sidebar({ active, onNavigate }: SidebarProps) {
+  const { user, logout } = useAuth();
+
   return (
     <aside className="w-64 shrink-0 border-r border-slate-200 bg-white flex flex-col h-screen sticky top-0">
       <div className="flex items-center gap-2 px-5 py-5 border-b border-slate-200">
@@ -36,64 +42,104 @@ export function Sidebar({ active, onNavigate }: SidebarProps) {
       </div>
 
       <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
-        <p className="sidebar-group-label">Workflow</p>
-        <NavItem
-          icon={<Inbox className="w-4 h-4" />}
-          label="Intake"
-          active={active === "submit"}
-          onClick={() => onNavigate("submit")}
-        />
-        <NavItem
-          icon={<ClipboardList className="w-4 h-4" />}
-          label="Review"
-          active={active === "review"}
-          onClick={() => onNavigate("review")}
-        />
-        <NavItem
-          icon={<Wrench className="w-4 h-4" />}
-          label="Correct"
-          active={active === "correct"}
-          onClick={() => onNavigate("correct")}
-        />
+        {(can(user, "intake") || can(user, "review") || can(user, "correct")) && (
+          <p className="sidebar-group-label">Workflow</p>
+        )}
+        {can(user, "intake") && (
+          <NavItem
+            icon={<Inbox className="w-4 h-4" />}
+            label="Intake"
+            active={active === "submit"}
+            onClick={() => onNavigate("submit")}
+          />
+        )}
+        {can(user, "review") && (
+          <NavItem
+            icon={<ClipboardList className="w-4 h-4" />}
+            label="Review"
+            active={active === "review"}
+            onClick={() => onNavigate("review")}
+          />
+        )}
+        {can(user, "correct") && (
+          <NavItem
+            icon={<Wrench className="w-4 h-4" />}
+            label="Correct"
+            active={active === "correct"}
+            onClick={() => onNavigate("correct")}
+          />
+        )}
 
-        <p className="sidebar-group-label">Oversight</p>
-        <NavItem
-          icon={<BarChart3 className="w-4 h-4" />}
-          label="Analytics"
-          active={active === "analytics"}
-          onClick={() => onNavigate("analytics")}
-        />
-        <NavItem
-          icon={<ShieldAlert className="w-4 h-4" />}
-          label="Safety Tracker"
-          active={active === "safety"}
-          onClick={() => onNavigate("safety")}
-        />
+        {(can(user, "analytics") || can(user, "safety")) && (
+          <p className="sidebar-group-label">Oversight</p>
+        )}
+        {can(user, "analytics") && (
+          <NavItem
+            icon={<BarChart3 className="w-4 h-4" />}
+            label="Analytics"
+            active={active === "analytics"}
+            onClick={() => onNavigate("analytics")}
+          />
+        )}
+        {can(user, "safety") && (
+          <NavItem
+            icon={<ShieldAlert className="w-4 h-4" />}
+            label="Safety Tracker"
+            active={active === "safety"}
+            onClick={() => onNavigate("safety")}
+          />
+        )}
 
-        <p className="sidebar-group-label">Reference</p>
-        <NavItem
-          icon={<BookOpen className="w-4 h-4" />}
-          label="Rule Catalog"
-          active={active === "rules"}
-          onClick={() => onNavigate("rules")}
-        />
-        <NavItem
-          icon={<Users className="w-4 h-4" />}
-          label="Subjects"
-          active={active === "subjects"}
-          onClick={() => onNavigate("subjects")}
-        />
+        {(can(user, "rules") || can(user, "subjects")) && (
+          <p className="sidebar-group-label">Reference</p>
+        )}
+        {can(user, "rules") && (
+          <NavItem
+            icon={<BookOpen className="w-4 h-4" />}
+            label="Rule Catalog"
+            active={active === "rules"}
+            onClick={() => onNavigate("rules")}
+          />
+        )}
+        {can(user, "subjects") && (
+          <NavItem
+            icon={<Users className="w-4 h-4" />}
+            label="Subjects"
+            active={active === "subjects"}
+            onClick={() => onNavigate("subjects")}
+          />
+        )}
+
+        {can(user, "admin") && (
+          <>
+            <p className="sidebar-group-label">Administration</p>
+            <NavItem
+              icon={<UserCog className="w-4 h-4" />}
+              label="Administration"
+              active={active === "admin"}
+              onClick={() => onNavigate("admin")}
+            />
+          </>
+        )}
       </nav>
 
       <div className="border-t border-slate-200 px-5 py-4">
         <div className="flex items-center gap-2 mb-2">
           <UserCircle className="w-7 h-7 text-slate-400" />
           <div>
-            <p className="text-sm font-medium text-slate-700 leading-tight">Reviewer</p>
-            <p className="text-xs text-slate-500 leading-tight">Demo session</p>
+            <p className="text-sm font-medium text-slate-700 leading-tight">
+              {user?.name ?? "Reviewer"}
+            </p>
+            <p className="text-xs text-slate-500 leading-tight">
+              {user?.siteId ? `Site ${user.siteId}` : "Demo session"}
+            </p>
           </div>
         </div>
-        <button type="button" className="text-xs text-slate-400 hover:text-slate-600 pl-9">
+        <button
+          type="button"
+          onClick={logout}
+          className="text-xs text-slate-400 hover:text-slate-600 pl-9"
+        >
           Sign out
         </button>
       </div>

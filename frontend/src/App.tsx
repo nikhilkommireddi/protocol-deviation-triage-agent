@@ -7,12 +7,18 @@ import { CorrectQueue } from "./components/CorrectQueue";
 import { SafetyTracker } from "./components/SafetyTracker";
 import { RuleCatalog } from "./components/RuleCatalog";
 import { Subjects } from "./components/Subjects";
+import { Administration } from "./components/Administration";
+import { Login } from "./components/Login";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 
-function App() {
+function AppContent() {
+  const { user } = useAuth();
   const [view, setView] = useState<View>("submit");
   // Remounting a view on key bump is a simple way to force a fresh fetch
   // after a submission/review, without threading extra refresh state around.
   const [reviewQueueKey, setReviewQueueKey] = useState(0);
+
+  if (!user) return <Login />;
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
@@ -32,8 +38,17 @@ function App() {
         {view === "safety" && <SafetyTracker />}
         {view === "rules" && <RuleCatalog />}
         {view === "subjects" && <Subjects />}
+        {view === "admin" && <Administration />}
       </main>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 

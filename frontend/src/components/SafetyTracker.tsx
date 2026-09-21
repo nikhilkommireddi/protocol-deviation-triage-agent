@@ -3,11 +3,14 @@ import { AlertTriangle, ShieldAlert, Siren } from "lucide-react";
 import { listReports } from "../api";
 import type { TriageResult } from "../types";
 import { categoryBadgeClass, statusBadgeClass } from "../lib/badges";
+import { useAuth } from "../context/AuthContext";
+import { can } from "../lib/permissions";
 import { PageHeader } from "./PageHeader";
 import { ReportDetail } from "./ReportDetail";
 import { StatCard } from "./StatCard";
 
 export function SafetyTracker() {
+  const { user } = useAuth();
   const [reports, setReports] = useState<TriageResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -121,7 +124,14 @@ export function SafetyTracker() {
             </table>
           </div>
 
-          {selectedId && <ReportDetail reportId={selectedId} onReviewed={refresh} />}
+          {selectedId && (
+            <ReportDetail
+              reportId={selectedId}
+              canEdit={can(user, "review.edit")}
+              canDecide={can(user, "review.decide")}
+              onReviewed={refresh}
+            />
+          )}
         </>
       )}
     </div>

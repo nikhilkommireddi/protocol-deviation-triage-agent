@@ -1,3 +1,11 @@
+export type UserRole = "site_coordinator" | "cra" | "quality_reviewer" | "administrator";
+
+export interface DemoUser {
+  name: string;
+  role: UserRole;
+  siteId?: string;
+}
+
 export interface DeviationSubmission {
   protocol_id: string;
   site_id: string;

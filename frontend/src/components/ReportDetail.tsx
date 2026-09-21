@@ -9,6 +9,10 @@ import { ReasoningTrace } from "./ReasoningTrace";
 interface ReportDetailProps {
   reportId: string;
   onReviewed: () => void;
+  /** Whether the current role may edit memo fields (an override). Defaults to true for callers that don't gate. */
+  canEdit?: boolean;
+  /** Whether the current role may Approve/Reject (a final decision). Defaults to true for callers that don't gate. */
+  canDecide?: boolean;
 }
 
 const EMPTY_MEMO: Memo = {
@@ -22,7 +26,12 @@ const EMPTY_MEMO: Memo = {
   reviewer_note: "",
 };
 
-export function ReportDetail({ reportId, onReviewed }: ReportDetailProps) {
+export function ReportDetail({
+  reportId,
+  onReviewed,
+  canEdit = true,
+  canDecide = true,
+}: ReportDetailProps) {
   const [record, setRecord] = useState<TriageResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -156,12 +165,16 @@ export function ReportDetail({ reportId, onReviewed }: ReportDetailProps) {
 
       {record.memo ? (
         <div className="space-y-4 border-t border-slate-200 pt-4">
-          <h3 className="font-medium text-slate-800">Drafted memo (edit as needed before approving)</h3>
+          <h3 className="font-medium text-slate-800">
+            Drafted memo{" "}
+            {canEdit ? "(edit as needed before approving)" : "(view only for your role)"}
+          </h3>
 
           <Field label="Summary">
             <textarea
               className="input h-20"
               value={memo.summary}
+              disabled={!canEdit}
               onChange={(e) => setMemo({ ...memo, summary: e.target.value })}
             />
           </Field>
@@ -169,6 +182,7 @@ export function ReportDetail({ reportId, onReviewed }: ReportDetailProps) {
             <textarea
               className="input h-24"
               value={memo.root_cause_narrative}
+              disabled={!canEdit}
               onChange={(e) => setMemo({ ...memo, root_cause_narrative: e.target.value })}
             />
           </Field>
@@ -176,6 +190,7 @@ export function ReportDetail({ reportId, onReviewed }: ReportDetailProps) {
             <textarea
               className="input h-16"
               value={memo.regulatory_citation}
+              disabled={!canEdit}
               onChange={(e) => setMemo({ ...memo, regulatory_citation: e.target.value })}
             />
           </Field>
@@ -183,6 +198,7 @@ export function ReportDetail({ reportId, onReviewed }: ReportDetailProps) {
             <textarea
               className="input h-28"
               value={actionsText}
+              disabled={!canEdit}
               onChange={(e) => setActionsText(e.target.value)}
             />
           </Field>
@@ -191,6 +207,7 @@ export function ReportDetail({ reportId, onReviewed }: ReportDetailProps) {
             <input
               type="checkbox"
               checked={memo.requires_expedited_reporting}
+              disabled={!canEdit}
               onChange={(e) =>
                 setMemo({ ...memo, requires_expedited_reporting: e.target.checked })
               }
@@ -203,6 +220,7 @@ export function ReportDetail({ reportId, onReviewed }: ReportDetailProps) {
               <input
                 className="input"
                 value={memo.responsible_party}
+                disabled={!canEdit}
                 onChange={(e) => setMemo({ ...memo, responsible_party: e.target.value })}
               />
             </Field>
@@ -210,6 +228,7 @@ export function ReportDetail({ reportId, onReviewed }: ReportDetailProps) {
               <input
                 className="input"
                 value={memo.target_resolution_date}
+                disabled={!canEdit}
                 onChange={(e) => setMemo({ ...memo, target_resolution_date: e.target.value })}
               />
             </Field>
@@ -219,28 +238,36 @@ export function ReportDetail({ reportId, onReviewed }: ReportDetailProps) {
             <input
               className="input"
               value={memo.reviewer_note ?? ""}
+              disabled={!canEdit}
               onChange={(e) => setMemo({ ...memo, reviewer_note: e.target.value })}
             />
           </Field>
 
-          <div className="flex gap-3">
-            <button
-              className="btn-primary flex items-center gap-2"
-              disabled={submitting}
-              onClick={() => handleReview("approved")}
-            >
-              <CheckCircle2 className="w-4 h-4" />
-              Approve
-            </button>
-            <button
-              className="btn-danger flex items-center gap-2"
-              disabled={submitting}
-              onClick={() => handleReview("rejected")}
-            >
-              <XCircle className="w-4 h-4" />
-              Reject
-            </button>
-          </div>
+          {canDecide ? (
+            <div className="flex gap-3">
+              <button
+                className="btn-primary flex items-center gap-2"
+                disabled={submitting}
+                onClick={() => handleReview("approved")}
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                Approve
+              </button>
+              <button
+                className="btn-danger flex items-center gap-2"
+                disabled={submitting}
+                onClick={() => handleReview("rejected")}
+              >
+                <XCircle className="w-4 h-4" />
+                Reject
+              </button>
+            </div>
+          ) : (
+            <p className="text-xs text-slate-400">
+              Your role can {canEdit ? "override the classification above" : "view this record"}
+              , but approving or rejecting requires a Quality Reviewer.
+            </p>
+          )}
 
           {error && <p className="text-red-600 text-sm">{error}</p>}
         </div>
