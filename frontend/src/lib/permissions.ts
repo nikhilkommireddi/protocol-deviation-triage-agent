@@ -6,6 +6,7 @@ import type { DemoUser, UserRole } from "../types";
 // like, not to secure anything.
 
 export type Capability =
+  | "dashboard"
   | "intake"
   | "review"
   | "review.edit"
@@ -26,6 +27,7 @@ export const ALL_ROLES: UserRole[] = [
 ];
 
 export const CAPABILITY_LABELS: Record<Capability, string> = {
+  dashboard: "View Dashboard",
   intake: "Submit new deviations",
   review: "View Review Queue",
   "review.edit": "Edit / override classification",
@@ -40,9 +42,19 @@ export const CAPABILITY_LABELS: Record<Capability, string> = {
 };
 
 export const ROLE_CAPABILITIES: Record<UserRole, Capability[]> = {
-  site_coordinator: ["intake", "review", "rules", "subjects"],
-  cra: ["review", "review.edit", "correct", "analytics", "safety", "rules", "subjects"],
+  site_coordinator: ["dashboard", "intake", "review", "rules", "subjects"],
+  cra: [
+    "dashboard",
+    "review",
+    "review.edit",
+    "correct",
+    "analytics",
+    "safety",
+    "rules",
+    "subjects",
+  ],
   quality_reviewer: [
+    "dashboard",
     "review",
     "review.edit",
     "review.decide",
@@ -53,7 +65,7 @@ export const ROLE_CAPABILITIES: Record<UserRole, Capability[]> = {
     "rules",
     "subjects",
   ],
-  administrator: ["review", "correct", "analytics", "rules", "subjects", "admin"],
+  administrator: ["dashboard", "review", "correct", "analytics", "rules", "subjects", "admin"],
 };
 
 export function can(user: DemoUser | null, capability: Capability): boolean {

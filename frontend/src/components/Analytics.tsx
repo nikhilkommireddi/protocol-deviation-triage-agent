@@ -2,16 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, CheckCircle2, ClipboardList, Gauge } from "lucide-react";
 import { listReports } from "../api";
 import type { TriageResult } from "../types";
+import { CATEGORY_BAR_CLASS } from "../lib/badges";
 import { PageHeader } from "./PageHeader";
 import { StatCard } from "./StatCard";
-
-const CATEGORY_BAR_COLOR: Record<string, string> = {
-  major: "bg-red-500",
-  minor: "bg-amber-500",
-  technical: "bg-sky-500",
-  administrative: "bg-slate-400",
-  unreported: "bg-violet-500",
-};
 
 const STATUS_BAR_COLOR: Record<string, string> = {
   queued: "bg-amber-500",
@@ -112,7 +105,7 @@ export function Analytics() {
                     label={category}
                     count={count}
                     total={stats.total}
-                    color={CATEGORY_BAR_COLOR[category] ?? "bg-slate-400"}
+                    color={CATEGORY_BAR_CLASS[category] ?? "bg-slate-400"}
                   />
                 ))}
               </div>

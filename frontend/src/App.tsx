@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Sidebar, type View } from "./components/Sidebar";
+import { Dashboard } from "./components/Dashboard";
 import { SubmitWizard } from "./components/wizard/SubmitWizard";
 import { ReviewQueue } from "./components/ReviewQueue";
 import { Analytics } from "./components/Analytics";
@@ -13,7 +14,7 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 
 function AppContent() {
   const { user } = useAuth();
-  const [view, setView] = useState<View>("submit");
+  const [view, setView] = useState<View>("dashboard");
   // Remounting a view on key bump is a simple way to force a fresh fetch
   // after a submission/review, without threading extra refresh state around.
   const [reviewQueueKey, setReviewQueueKey] = useState(0);
@@ -25,6 +26,7 @@ function AppContent() {
       <Sidebar active={view} onNavigate={setView} />
 
       <main className="flex-1 px-8 py-8 overflow-x-hidden">
+        {view === "dashboard" && <Dashboard />}
         {view === "submit" && (
           <SubmitWizard
             onSubmitted={() => {

@@ -3,7 +3,6 @@ import { Users } from "lucide-react";
 import { getReferenceData } from "../api";
 import type { ReferenceData } from "../types";
 import { categoryBadgeClass } from "../lib/badges";
-import { renderMiniMarkdown } from "../lib/miniMarkdown";
 import { PageHeader } from "./PageHeader";
 
 export function RuleCatalog() {
@@ -48,8 +47,6 @@ export function RuleCatalog() {
           </div>
         ))}
       </div>
-
-      <div className="card">{renderMiniMarkdown(data.labels_markdown)}</div>
     </div>
   );
 }

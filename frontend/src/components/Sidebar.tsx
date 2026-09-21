@@ -3,6 +3,7 @@ import {
   BookOpen,
   ClipboardList,
   Inbox,
+  LayoutDashboard,
   ShieldAlert,
   ShieldCheck,
   UserCircle,
@@ -14,6 +15,7 @@ import { useAuth } from "../context/AuthContext";
 import { can } from "../lib/permissions";
 
 export type View =
+  | "dashboard"
   | "submit"
   | "review"
   | "correct"
@@ -32,16 +34,25 @@ export function Sidebar({ active, onNavigate }: SidebarProps) {
   const { user, logout } = useAuth();
 
   return (
-    <aside className="w-64 shrink-0 border-r border-slate-200 bg-white flex flex-col h-screen sticky top-0">
-      <div className="flex items-center gap-2 px-5 py-5 border-b border-slate-200">
-        <ShieldCheck className="w-6 h-6 text-sky-600" />
+    <aside className="sidebar w-64 shrink-0 flex flex-col h-screen sticky top-0">
+      <div className="flex items-center gap-2 px-5 py-5 border-b border-white/10">
+        <ShieldCheck className="w-6 h-6 text-sky-400" />
         <div>
-          <p className="text-sm font-semibold text-slate-900 leading-tight">Deviation Triage</p>
+          <p className="text-sm font-semibold text-slate-100 leading-tight">Deviation Triage</p>
           <p className="text-xs text-slate-500 leading-tight">Clinical trial review</p>
         </div>
       </div>
 
       <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
+        {can(user, "dashboard") && (
+          <NavItem
+            icon={<LayoutDashboard className="w-4 h-4" />}
+            label="Dashboard"
+            active={active === "dashboard"}
+            onClick={() => onNavigate("dashboard")}
+          />
+        )}
+
         {(can(user, "intake") || can(user, "review") || can(user, "correct")) && (
           <p className="sidebar-group-label">Workflow</p>
         )}
@@ -123,11 +134,11 @@ export function Sidebar({ active, onNavigate }: SidebarProps) {
         )}
       </nav>
 
-      <div className="border-t border-slate-200 px-5 py-4">
+      <div className="border-t border-white/10 px-5 py-4">
         <div className="flex items-center gap-2 mb-2">
-          <UserCircle className="w-7 h-7 text-slate-400" />
+          <UserCircle className="w-7 h-7 text-slate-500" />
           <div>
-            <p className="text-sm font-medium text-slate-700 leading-tight">
+            <p className="text-sm font-medium text-slate-200 leading-tight">
               {user?.name ?? "Reviewer"}
             </p>
             <p className="text-xs text-slate-500 leading-tight">
@@ -138,7 +149,7 @@ export function Sidebar({ active, onNavigate }: SidebarProps) {
         <button
           type="button"
           onClick={logout}
-          className="text-xs text-slate-400 hover:text-slate-600 pl-9"
+          className="text-xs text-slate-500 hover:text-slate-300 pl-9"
         >
           Sign out
         </button>
