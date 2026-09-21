@@ -49,12 +49,19 @@ class TriageAgentError(Exception):
 MODEL_DIR = Path("models/deviation-classifier")
 CAPA_GUIDANCE_PATH = Path("data/capa_guidance.json")
 LABELS_PATH = Path("data/labels.md")
+# Model tiering: Sonnet 5 only where reasoning depth actually matters
+# (Adjudication is the decision-maker; Memo Drafting needs real regulatory
+# writing quality; Protocol Investigator does real tool-use reasoning over
+# what to look up). Supervisor/Site History/Verification are comparatively
+# thin agents by design (a routing decision, a short-list summary, a
+# consistency check) -- Haiku 4.5 is a meaningful cost/latency cut there
+# with low risk to quality.
 MEMO_MODEL = "claude-sonnet-5"
-SUPERVISOR_MODEL = "claude-sonnet-5"
+SUPERVISOR_MODEL = "claude-haiku-4-5-20251001"
 INVESTIGATOR_MODEL = "claude-sonnet-5"
-HISTORY_MODEL = "claude-sonnet-5"
+HISTORY_MODEL = "claude-haiku-4-5-20251001"
 ADJUDICATION_MODEL = "claude-sonnet-5"
-VERIFICATION_MODEL = "claude-sonnet-5"
+VERIFICATION_MODEL = "claude-haiku-4-5-20251001"
 MAX_TOKEN_LENGTH = 176  # matches the max_length the classifier was fine-tuned with
 MAX_TOOL_ITERATIONS = 4
 MAX_ADJUDICATION_RETRIES = 1
@@ -165,8 +172,8 @@ def plan_investigation(text: str) -> dict:
         model=SUPERVISOR_MODEL,
         max_tokens=512,
         system=SUPERVISOR_SYSTEM_PROMPT,
+        # Haiku 4.5 (SUPERVISOR_MODEL) rejects the "effort" field Sonnet 5 accepts.
         output_config={
-            "effort": "low",
             "format": {"type": "json_schema", "schema": SUPERVISOR_PLAN_SCHEMA},
         },
         messages=[{"role": "user", "content": f"Deviation report:\n{text}"}],
@@ -362,8 +369,8 @@ def investigate_history(text: str, site_id: str, prior_reports: list[dict]) -> d
         model=HISTORY_MODEL,
         max_tokens=1024,
         system=HISTORY_SYSTEM_PROMPT,
+        # Haiku 4.5 (HISTORY_MODEL) rejects the "effort" field Sonnet 5 accepts.
         output_config={
-            "effort": "low",
             "format": {"type": "json_schema", "schema": HISTORY_FINDINGS_SCHEMA},
         },
         messages=[{"role": "user", "content": user_prompt}],
@@ -557,8 +564,8 @@ def verify(adjudication: dict, memo: dict, protocol_findings: dict, history_find
         model=VERIFICATION_MODEL,
         max_tokens=1024,
         system=VERIFICATION_SYSTEM_PROMPT,
+        # Haiku 4.5 (VERIFICATION_MODEL) rejects the "effort" field Sonnet 5 accepts.
         output_config={
-            "effort": "low",
             "format": {"type": "json_schema", "schema": VERIFICATION_SCHEMA},
         },
         messages=[{"role": "user", "content": user_prompt}],
