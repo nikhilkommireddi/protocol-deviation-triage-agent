@@ -36,3 +36,27 @@ const STATUS_BADGE: Record<string, string> = {
 export function statusBadgeClass(status: string): string {
   return `badge ${STATUS_BADGE[status] ?? "badge-slate"}`;
 }
+
+const CAPA_STATUS_BADGE: Record<string, string> = {
+  draft: "badge-slate",
+  review: "badge-amber",
+  approved: "badge-sky",
+  completed: "badge-green",
+};
+
+const CAPA_STATUS_LABEL: Record<string, string> = {
+  draft: "Draft",
+  review: "Review",
+  approved: "Approved",
+  completed: "Completed",
+};
+
+export function capaStatusBadgeClass(capaStatus: string | null): string {
+  const status = capaStatus ?? "draft";
+  return `badge ${CAPA_STATUS_BADGE[status] ?? "badge-slate"}`;
+}
+
+export function capaStatusLabel(capaStatus: string | null): string {
+  const status = capaStatus ?? "draft";
+  return CAPA_STATUS_LABEL[status] ?? status;
+}

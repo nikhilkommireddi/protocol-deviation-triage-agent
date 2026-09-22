@@ -2,24 +2,10 @@ import { useEffect, useState } from "react";
 import { CheckCircle2, Circle, Wrench } from "lucide-react";
 import { listReports, updateCapaActionsStatus, updateCapaStatus } from "../api";
 import type { CapaStatus, DemoUser, TriageResult } from "../types";
-import { categoryBadgeClass } from "../lib/badges";
+import { capaStatusBadgeClass, capaStatusLabel, categoryBadgeClass } from "../lib/badges";
 import { useAuth } from "../context/AuthContext";
 import { can } from "../lib/permissions";
 import { PageHeader } from "./PageHeader";
-
-const CAPA_STATUS_BADGE: Record<CapaStatus, string> = {
-  draft: "badge badge-slate",
-  review: "badge badge-amber",
-  approved: "badge badge-sky",
-  completed: "badge badge-green",
-};
-
-const CAPA_STATUS_LABEL: Record<CapaStatus, string> = {
-  draft: "Draft",
-  review: "Review",
-  approved: "Approved",
-  completed: "Completed",
-};
 
 export function CorrectQueue() {
   const { user } = useAuth();
@@ -179,7 +165,7 @@ function CorrectCard({
         </div>
         <div className="flex items-center gap-2">
           {!canEdit && <span className="text-[10px] uppercase tracking-wide text-slate-400">View only</span>}
-          <span className={CAPA_STATUS_BADGE[capaStatus]}>{CAPA_STATUS_LABEL[capaStatus]}</span>
+          <span className={capaStatusBadgeClass(capaStatus)}>{capaStatusLabel(capaStatus)}</span>
         </div>
       </div>
 

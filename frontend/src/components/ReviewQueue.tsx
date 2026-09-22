@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { CheckCircle2, ClipboardList, Clock, Search, XCircle } from "lucide-react";
 import { listReports } from "../api";
 import type { TriageResult } from "../types";
-import { categoryBadgeClass, statusBadgeClass } from "../lib/badges";
+import { capaStatusBadgeClass, capaStatusLabel, categoryBadgeClass, statusBadgeClass } from "../lib/badges";
 import { useAuth } from "../context/AuthContext";
 import { can } from "../lib/permissions";
 import { PageHeader } from "./PageHeader";
@@ -10,6 +10,7 @@ import { ReportDetail } from "./ReportDetail";
 import { StatCard } from "./StatCard";
 
 const PAGE_SIZE = 10;
+const CATEGORIES = ["major", "minor", "technical", "administrative", "unreported"];
 
 export function ReviewQueue() {
   const { user } = useAuth();
@@ -17,6 +18,10 @@ export function ReviewQueue() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<Set<string>>(new Set());
+  const [categoryFilter, setCategoryFilter] = useState<Set<string>>(new Set());
+  const [studyFilter, setStudyFilter] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -54,10 +59,19 @@ export function ReviewQueue() {
     [reports],
   );
 
+  const studyOptions = useMemo(
+    () => Array.from(new Set(reports.map((r) => r.protocol_id))).sort(),
+    [reports],
+  );
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return reports.filter((r) => {
       if (!statusFilter.has(r.status)) return false;
+      if (categoryFilter.size > 0 && !categoryFilter.has(r.category ?? "")) return false;
+      if (studyFilter && r.protocol_id !== studyFilter) return false;
+      if (dateFrom && r.deviation_date < dateFrom) return false;
+      if (dateTo && r.deviation_date > dateTo) return false;
       if (!q) return true;
       return (
         r.report_id.toLowerCase().includes(q) ||
@@ -65,7 +79,7 @@ export function ReviewQueue() {
         r.subject_id.toLowerCase().includes(q)
       );
     });
-  }, [reports, statusFilter, search]);
+  }, [reports, statusFilter, categoryFilter, studyFilter, dateFrom, dateTo, search]);
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const pageStart = page * PAGE_SIZE;
@@ -77,6 +91,16 @@ export function ReviewQueue() {
       const next = new Set(prev);
       if (next.has(status)) next.delete(status);
       else next.add(status);
+      return next;
+    });
+  }
+
+  function toggleCategory(category: string) {
+    setPage(0);
+    setCategoryFilter((prev) => {
+      const next = new Set(prev);
+      if (next.has(category)) next.delete(category);
+      else next.add(category);
       return next;
     });
   }
@@ -126,7 +150,7 @@ export function ReviewQueue() {
             />
           </div>
 
-          <div className="flex items-center gap-3 mb-4 flex-wrap">
+          <div className="flex items-center gap-3 mb-3 flex-wrap">
             <div className="relative">
               <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
@@ -139,6 +163,47 @@ export function ReviewQueue() {
                 }}
               />
             </div>
+            <select
+              className="input w-auto"
+              value={studyFilter}
+              onChange={(e) => {
+                setPage(0);
+                setStudyFilter(e.target.value);
+              }}
+            >
+              <option value="">All studies</option>
+              {studyOptions.map((id) => (
+                <option key={id} value={id}>
+                  {id}
+                </option>
+              ))}
+            </select>
+            <div className="flex items-center gap-1.5">
+              <input
+                type="date"
+                className="input w-auto"
+                value={dateFrom}
+                onChange={(e) => {
+                  setPage(0);
+                  setDateFrom(e.target.value);
+                }}
+                aria-label="Deviation date from"
+              />
+              <span className="text-slate-400 text-sm">to</span>
+              <input
+                type="date"
+                className="input w-auto"
+                value={dateTo}
+                onChange={(e) => {
+                  setPage(0);
+                  setDateTo(e.target.value);
+                }}
+                aria-label="Deviation date to"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 mb-4 flex-wrap">
             <div className="flex gap-2 flex-wrap">
               {allStatuses.map((status) => (
                 <button
@@ -154,6 +219,21 @@ export function ReviewQueue() {
                 </button>
               ))}
             </div>
+            <div className="flex gap-2 flex-wrap">
+              {CATEGORIES.map((category) => (
+                <button
+                  key={category}
+                  onClick={() => toggleCategory(category)}
+                  className={
+                    categoryFilter.has(category)
+                      ? "rounded-full bg-violet-100 text-violet-800 border border-violet-300 px-3 py-1 text-xs font-medium capitalize"
+                      : "rounded-full bg-white text-slate-500 border border-slate-300 px-3 py-1 text-xs font-medium capitalize"
+                  }
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="card overflow-x-auto mb-3">
@@ -166,6 +246,7 @@ export function ReviewQueue() {
                   <th className="py-2 pr-4">Category</th>
                   <th className="py-2 pr-4">Confidence</th>
                   <th className="py-2 pr-4">Status</th>
+                  <th className="py-2 pr-4">CAPA</th>
                   <th className="py-2 pr-4">Created</th>
                 </tr>
               </thead>
@@ -195,12 +276,21 @@ export function ReviewQueue() {
                     <td className="py-2 pr-4">
                       <span className={statusBadgeClass(r.status)}>{r.status}</span>
                     </td>
+                    <td className="py-2 pr-4">
+                      {r.memo ? (
+                        <span className={capaStatusBadgeClass(r.capa_status)}>
+                          {capaStatusLabel(r.capa_status)}
+                        </span>
+                      ) : (
+                        "-"
+                      )}
+                    </td>
                     <td className="py-2 pr-4 text-xs text-slate-500">{r.created_at}</td>
                   </tr>
                 ))}
                 {paged.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="py-6 text-center text-slate-400">
+                    <td colSpan={8} className="py-6 text-center text-slate-400">
                       No reports match the current filters.
                     </td>
                   </tr>

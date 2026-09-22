@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Check, MapPin, Minus, Shield, UserCog, Users } from "lucide-react";
+import { Check, History, MapPin, Minus, Shield, UserCog, Users } from "lucide-react";
 import { listReports } from "../api";
 import type { TriageResult } from "../types";
 import {
@@ -12,10 +12,12 @@ import {
 } from "../lib/permissions";
 import { PageHeader } from "./PageHeader";
 import { StatCard } from "./StatCard";
+import { TabButton } from "./TabButton";
 import { UsersPanel } from "./admin/UsersPanel";
 import { SitesPanel } from "./admin/SitesPanel";
+import { AuditLogsPanel } from "./admin/AuditLogsPanel";
 
-type Tab = "overview" | "users" | "sites";
+type Tab = "overview" | "users" | "sites" | "audit";
 
 export function Administration() {
   const [tab, setTab] = useState<Tab>("overview");
@@ -34,37 +36,16 @@ export function Administration() {
         <TabButton active={tab === "sites"} icon={<MapPin className="w-4 h-4" />} onClick={() => setTab("sites")}>
           Sites
         </TabButton>
+        <TabButton active={tab === "audit"} icon={<History className="w-4 h-4" />} onClick={() => setTab("audit")}>
+          Audit Logs
+        </TabButton>
       </div>
 
       {tab === "overview" && <Overview />}
       {tab === "users" && <UsersPanel />}
       {tab === "sites" && <SitesPanel />}
+      {tab === "audit" && <AuditLogsPanel />}
     </div>
-  );
-}
-
-function TabButton({
-  active,
-  icon,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  icon: React.ReactNode;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={
-        "flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 -mb-px " +
-        (active ? "border-sky-600 text-sky-700" : "border-transparent text-slate-500 hover:text-slate-700")
-      }
-    >
-      {icon}
-      {children}
-    </button>
   );
 }
 
