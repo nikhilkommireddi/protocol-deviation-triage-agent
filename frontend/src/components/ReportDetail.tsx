@@ -1,14 +1,28 @@
 import { useEffect, useState } from "react";
-import { CheckCircle2, Download, FileText, ShieldAlert, XCircle } from "lucide-react";
+import {
+  CheckCircle2,
+  ClipboardCheck,
+  Compass,
+  Download,
+  FileText,
+  Gavel,
+  History,
+  ShieldAlert,
+  XCircle,
+} from "lucide-react";
 import { getReport, reviewReport } from "../api";
 import type { Memo, ReviewDecision, TriageResult } from "../types";
-import { categoryBadgeClass, statusBadgeClass } from "../lib/badges";
+import { capaStatusBadgeClass, capaStatusLabel, categoryBadgeClass, statusBadgeClass } from "../lib/badges";
 import { generateReportPdf } from "../lib/pdfReport";
 import { useAuth } from "../context/AuthContext";
 import { AuditTrail } from "./AuditTrail";
 import { ReasoningTrace } from "./ReasoningTrace";
+import { TabButton } from "./TabButton";
 
 const CATEGORIES = ["major", "minor", "technical", "administrative", "unreported"];
+
+const TABS = ["overview", "ai", "human", "capa", "audit"] as const;
+type Tab = (typeof TABS)[number];
 
 interface ReportDetailProps {
   reportId: string;
@@ -41,6 +55,7 @@ export function ReportDetail({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [tab, setTab] = useState<Tab>("overview");
 
   const [memo, setMemo] = useState<Memo>(EMPTY_MEMO);
   const [actionsText, setActionsText] = useState("");
@@ -50,6 +65,7 @@ export function ReportDetail({
     let cancelled = false;
     setLoading(true);
     setError(null);
+    setTab("overview");
     getReport(reportId)
       .then((r) => {
         if (cancelled) return;
@@ -103,13 +119,18 @@ export function ReportDetail({
   if (!record) return null;
 
   return (
-    <div className="card space-y-6">
+    <div className="card space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-2">
           <FileText className="w-4 h-4 text-slate-400" />
           <span className="font-mono text-xs text-slate-500">{record.report_id.slice(0, 8)}</span>
           <span className={statusBadgeClass(record.status)}>{record.status}</span>
           {record.category && <span className={categoryBadgeClass(record.category)}>{record.category}</span>}
+          {record.memo && (
+            <span className={capaStatusBadgeClass(record.capa_status)}>
+              CAPA {capaStatusLabel(record.capa_status)}
+            </span>
+          )}
         </div>
         <button
           className="btn-secondary flex items-center gap-2"
@@ -120,26 +141,73 @@ export function ReportDetail({
         </button>
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
-        <div className="col-span-2">
-          <h3 className="font-medium text-slate-800 mb-1">
-            Original report ({record.protocol_id} / {record.subject_id})
-          </h3>
-          <textarea className="input h-28" value={record.text} disabled />
-          <p className="text-xs text-slate-500 mt-1">
-            Deviation date: {record.deviation_date} | Discovery date: {record.discovery_date}
-          </p>
-        </div>
+      <div className="flex gap-1 border-b border-slate-200">
+        <TabButton active={tab === "overview"} icon={<FileText className="w-4 h-4" />} onClick={() => setTab("overview")}>
+          Overview
+        </TabButton>
+        <TabButton active={tab === "ai"} icon={<Compass className="w-4 h-4" />} onClick={() => setTab("ai")}>
+          AI Assessment
+        </TabButton>
+        <TabButton active={tab === "human"} icon={<Gavel className="w-4 h-4" />} onClick={() => setTab("human")}>
+          Human Review
+        </TabButton>
+        <TabButton active={tab === "capa"} icon={<ClipboardCheck className="w-4 h-4" />} onClick={() => setTab("capa")}>
+          CAPA
+        </TabButton>
+        <TabButton active={tab === "audit"} icon={<History className="w-4 h-4" />} onClick={() => setTab("audit")}>
+          Audit History
+        </TabButton>
+      </div>
 
-        <div>
-          <h3 className="font-medium text-slate-800 mb-1">Classification</h3>
-          {record.category ? (
-            <>
-              <label className="block text-sm mb-1">
-                Category:{" "}
+      {tab === "overview" && (
+        <div className="grid grid-cols-3 gap-6">
+          <div className="col-span-2">
+            <h3 className="font-medium text-slate-800 mb-1">
+              Original report ({record.protocol_id} / {record.subject_id})
+            </h3>
+            <textarea className="input h-28" value={record.text} disabled />
+            <p className="text-xs text-slate-500 mt-1">
+              Deviation date: {record.deviation_date} | Discovery date: {record.discovery_date}
+            </p>
+          </div>
+
+          <div>
+            <h3 className="font-medium text-slate-800 mb-1">Classification</h3>
+            {record.category ? (
+              <>
+                <p className="text-sm">
+                  Category: <span className="font-semibold">{record.category}</span>
+                </p>
+                <p className="text-sm">Confidence: {record.confidence?.toFixed(2)}</p>
+                {(record.confidence ?? 1) < 0.6 && (
+                  <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1 mt-2 flex items-center gap-1.5">
+                    <ShieldAlert className="w-4 h-4 shrink-0" />
+                    Low confidence -- review the category assignment carefully.
+                  </p>
+                )}
+              </>
+            ) : (
+              <p className="text-sm text-slate-500">Not yet classified.</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {tab === "ai" && <ReasoningTrace result={record} />}
+
+      {tab === "human" &&
+        (record.memo ? (
+          <div className="space-y-4">
+            <h3 className="font-medium text-slate-800">
+              Drafted memo{" "}
+              {canEdit ? "(edit as needed before approving)" : "(view only for your role)"}
+            </h3>
+
+            {record.category && (
+              <Field label="Category">
                 {canEdit ? (
                   <select
-                    className="input inline-block w-auto ml-1"
+                    className="input w-auto"
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
                   >
@@ -152,158 +220,163 @@ export function ReportDetail({
                 ) : (
                   <span className="font-semibold">{record.category}</span>
                 )}
-              </label>
-              <p className="text-sm">Confidence: {record.confidence?.toFixed(2)}</p>
-              {(record.confidence ?? 1) < 0.6 && (
-                <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1 mt-2 flex items-center gap-1.5">
-                  <ShieldAlert className="w-4 h-4 shrink-0" />
-                  Low confidence -- review the category assignment carefully.
-                </p>
-              )}
-            </>
-          ) : (
-            <p className="text-sm text-slate-500">Not yet classified.</p>
+              </Field>
+            )}
+
+            <Field label="Summary">
+              <textarea
+                className="input h-20"
+                value={memo.summary}
+                disabled={!canEdit}
+                onChange={(e) => setMemo({ ...memo, summary: e.target.value })}
+              />
+            </Field>
+            <Field label="Root cause narrative">
+              <textarea
+                className="input h-24"
+                value={memo.root_cause_narrative}
+                disabled={!canEdit}
+                onChange={(e) => setMemo({ ...memo, root_cause_narrative: e.target.value })}
+              />
+            </Field>
+            <Field label="Regulatory citation">
+              <textarea
+                className="input h-16"
+                value={memo.regulatory_citation}
+                disabled={!canEdit}
+                onChange={(e) => setMemo({ ...memo, regulatory_citation: e.target.value })}
+              />
+            </Field>
+            <Field label="Recommended CAPA actions (one per line)">
+              <textarea
+                className="input h-28"
+                value={actionsText}
+                disabled={!canEdit}
+                onChange={(e) => setActionsText(e.target.value)}
+              />
+            </Field>
+
+            <label className="flex items-center gap-2 text-sm text-slate-700">
+              <input
+                type="checkbox"
+                checked={memo.requires_expedited_reporting}
+                disabled={!canEdit}
+                onChange={(e) =>
+                  setMemo({ ...memo, requires_expedited_reporting: e.target.checked })
+                }
+              />
+              Requires expedited reporting
+            </label>
+
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Responsible party">
+                <input
+                  className="input"
+                  value={memo.responsible_party}
+                  disabled={!canEdit}
+                  onChange={(e) => setMemo({ ...memo, responsible_party: e.target.value })}
+                />
+              </Field>
+              <Field label="Target resolution date">
+                <input
+                  className="input"
+                  value={memo.target_resolution_date}
+                  disabled={!canEdit}
+                  onChange={(e) => setMemo({ ...memo, target_resolution_date: e.target.value })}
+                />
+              </Field>
+            </div>
+
+            <Field label="Reviewer note (optional)">
+              <input
+                className="input"
+                value={memo.reviewer_note ?? ""}
+                disabled={!canEdit}
+                onChange={(e) => setMemo({ ...memo, reviewer_note: e.target.value })}
+              />
+            </Field>
+
+            {canDecide ? (
+              <div className="flex gap-3">
+                <button
+                  className="btn-primary flex items-center gap-2"
+                  disabled={submitting}
+                  onClick={() => handleReview("approved")}
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  Approve
+                </button>
+                <button
+                  className="btn-danger flex items-center gap-2"
+                  disabled={submitting}
+                  onClick={() => handleReview("rejected")}
+                >
+                  <XCircle className="w-4 h-4" />
+                  Reject
+                </button>
+              </div>
+            ) : (
+              <p className="text-xs text-slate-400">
+                Your role can {canEdit ? "override the classification above" : "view this record"}
+                , but approving or rejecting requires a Quality Reviewer.
+              </p>
+            )}
+
+            {error && <p className="text-red-600 text-sm">{error}</p>}
+          </div>
+        ) : (
+          <p className="text-slate-500">Memo not yet drafted for this report.</p>
+        ))}
+
+      {tab === "capa" && (
+        <div className="space-y-4">
+          {record.memo && (
+            <p className="text-sm">
+              CAPA plan status:{" "}
+              <span className={capaStatusBadgeClass(record.capa_status)}>
+                {capaStatusLabel(record.capa_status)}
+              </span>
+              <span className="text-xs text-slate-400 ml-2">
+                (advance this from the Correct page)
+              </span>
+            </p>
           )}
-        </div>
-      </div>
 
-      {record.capa_guidance && (
-        <details className="rounded-md border border-slate-200 p-3">
-          <summary className="cursor-pointer font-medium text-slate-700">CAPA guidance</summary>
-          <div className="mt-2 text-sm space-y-1">
-            <p>
-              <span className="font-medium">Routing team:</span>{" "}
-              {record.capa_guidance.routing_team}
-            </p>
-            <p>
-              <span className="font-medium">Regulatory reference:</span>{" "}
-              {record.capa_guidance.regulatory_reference}
-            </p>
-            <p className="font-medium">Required CAPA elements:</p>
-            <ul className="list-disc list-inside">
-              {record.capa_guidance.required_capa_elements.map((el) => (
-                <li key={el}>{el}</li>
-              ))}
-            </ul>
-          </div>
-        </details>
-      )}
-
-      <ReasoningTrace result={record} />
-
-      {record.memo ? (
-        <div className="space-y-4 border-t border-slate-200 pt-4">
-          <h3 className="font-medium text-slate-800">
-            Drafted memo{" "}
-            {canEdit ? "(edit as needed before approving)" : "(view only for your role)"}
-          </h3>
-
-          <Field label="Summary">
-            <textarea
-              className="input h-20"
-              value={memo.summary}
-              disabled={!canEdit}
-              onChange={(e) => setMemo({ ...memo, summary: e.target.value })}
-            />
-          </Field>
-          <Field label="Root cause narrative">
-            <textarea
-              className="input h-24"
-              value={memo.root_cause_narrative}
-              disabled={!canEdit}
-              onChange={(e) => setMemo({ ...memo, root_cause_narrative: e.target.value })}
-            />
-          </Field>
-          <Field label="Regulatory citation">
-            <textarea
-              className="input h-16"
-              value={memo.regulatory_citation}
-              disabled={!canEdit}
-              onChange={(e) => setMemo({ ...memo, regulatory_citation: e.target.value })}
-            />
-          </Field>
-          <Field label="Recommended CAPA actions (one per line)">
-            <textarea
-              className="input h-28"
-              value={actionsText}
-              disabled={!canEdit}
-              onChange={(e) => setActionsText(e.target.value)}
-            />
-          </Field>
-
-          <label className="flex items-center gap-2 text-sm text-slate-700">
-            <input
-              type="checkbox"
-              checked={memo.requires_expedited_reporting}
-              disabled={!canEdit}
-              onChange={(e) =>
-                setMemo({ ...memo, requires_expedited_reporting: e.target.checked })
-              }
-            />
-            Requires expedited reporting
-          </label>
-
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Responsible party">
-              <input
-                className="input"
-                value={memo.responsible_party}
-                disabled={!canEdit}
-                onChange={(e) => setMemo({ ...memo, responsible_party: e.target.value })}
-              />
-            </Field>
-            <Field label="Target resolution date">
-              <input
-                className="input"
-                value={memo.target_resolution_date}
-                disabled={!canEdit}
-                onChange={(e) => setMemo({ ...memo, target_resolution_date: e.target.value })}
-              />
-            </Field>
-          </div>
-
-          <Field label="Reviewer note (optional)">
-            <input
-              className="input"
-              value={memo.reviewer_note ?? ""}
-              disabled={!canEdit}
-              onChange={(e) => setMemo({ ...memo, reviewer_note: e.target.value })}
-            />
-          </Field>
-
-          {canDecide ? (
-            <div className="flex gap-3">
-              <button
-                className="btn-primary flex items-center gap-2"
-                disabled={submitting}
-                onClick={() => handleReview("approved")}
-              >
-                <CheckCircle2 className="w-4 h-4" />
-                Approve
-              </button>
-              <button
-                className="btn-danger flex items-center gap-2"
-                disabled={submitting}
-                onClick={() => handleReview("rejected")}
-              >
-                <XCircle className="w-4 h-4" />
-                Reject
-              </button>
+          {record.capa_guidance ? (
+            <div className="text-sm space-y-1">
+              <p>
+                <span className="font-medium">Routing team:</span>{" "}
+                {record.capa_guidance.routing_team}
+              </p>
+              <p>
+                <span className="font-medium">Regulatory reference:</span>{" "}
+                {record.capa_guidance.regulatory_reference}
+              </p>
+              <p className="font-medium">Required CAPA elements:</p>
+              <ul className="list-disc list-inside">
+                {record.capa_guidance.required_capa_elements.map((el) => (
+                  <li key={el}>{el}</li>
+                ))}
+              </ul>
             </div>
           ) : (
-            <p className="text-xs text-slate-400">
-              Your role can {canEdit ? "override the classification above" : "view this record"}
-              , but approving or rejecting requires a Quality Reviewer.
-            </p>
+            <p className="text-sm text-slate-500">No CAPA guidance recorded yet.</p>
           )}
 
-          {error && <p className="text-red-600 text-sm">{error}</p>}
+          {record.memo && record.memo.recommended_capa_actions.length > 0 && (
+            <div>
+              <p className="font-medium text-sm text-slate-700 mb-1">Recommended CAPA actions:</p>
+              <ul className="list-disc list-inside text-sm space-y-0.5">
+                {record.memo.recommended_capa_actions.map((action) => (
+                  <li key={action}>{action}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
-      ) : (
-        <p className="text-slate-500">Memo not yet drafted for this report.</p>
       )}
 
-      <AuditTrail reportId={record.report_id} />
+      {tab === "audit" && <AuditTrail reportId={record.report_id} />}
     </div>
   );
 }
