@@ -109,6 +109,7 @@ class TriageState(TypedDict, total=False):
     adjudication: dict
     capa_guidance: dict
     memo: dict
+    capa_status: str
     verification: dict
     retry_count: int
     status: str
@@ -801,8 +802,8 @@ def memo_draft_node(state: TriageState) -> dict:
         )
     except RETRYABLE_ERRORS as exc:
         raise TriageAgentError(f"Memo Drafting Agent failed: {exc}") from exc
-    db.update_report(state["report_id"], {"memo": memo, "status": "drafted"})
-    return {"memo": memo, "status": "drafted"}
+    db.update_report(state["report_id"], {"memo": memo, "capa_status": "draft", "status": "drafted"})
+    return {"memo": memo, "capa_status": "draft", "status": "drafted"}
 
 
 def verify_node(state: TriageState) -> dict:

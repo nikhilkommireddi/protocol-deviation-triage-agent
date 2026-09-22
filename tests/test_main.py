@@ -168,6 +168,62 @@ class TestReferenceAndCapaActionsEndpoints(unittest.TestCase):
         self.assertIn("1/2", capa_events[0]["description"])
         self.assertEqual(capa_events[0]["actor_name"], "Jordan CRA")
 
+    def test_update_capa_status_valid_transition(self):
+        self._insert_report("r1")
+        db.update_report("r1", {"capa_status": "draft"})
+        with TestClient(app) as client:
+            response = client.post(
+                "/reports/r1/capa-status",
+                json={"status": "review", "actor_name": "Jordan CRA", "actor_role": "cra"},
+            )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["capa_status"], "review")
+
+        events = db.list_audit_events("r1")
+        status_events = [e for e in events if e["event_type"] == "capa_status_changed"]
+        self.assertEqual(len(status_events), 1)
+        self.assertIn("draft -> review", status_events[0]["description"])
+        self.assertEqual(status_events[0]["actor_name"], "Jordan CRA")
+
+    def test_update_capa_status_rejects_illegal_skip(self):
+        self._insert_report("r1")
+        db.update_report("r1", {"capa_status": "draft"})
+        with TestClient(app) as client:
+            response = client.post("/reports/r1/capa-status", json={"status": "approved"})
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(db.get_report("r1")["capa_status"], "draft")
+
+    def test_update_capa_status_treats_null_as_draft(self):
+        self._insert_report("r1")
+        with TestClient(app) as client:
+            response = client.post("/reports/r1/capa-status", json={"status": "review"})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["capa_status"], "review")
+
+    def test_update_capa_actions_auto_completes_when_approved_and_fully_checked(self):
+        self._insert_report("r1")
+        db.update_report("r1", {"capa_status": "approved"})
+        with TestClient(app) as client:
+            response = client.post("/reports/r1/capa-actions", json={"actions_status": [True, True]})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["capa_status"], "completed")
+
+        events = db.list_audit_events("r1")
+        self.assertTrue(
+            any(
+                e["event_type"] == "capa_status_changed" and "completed" in e["description"]
+                for e in events
+            )
+        )
+
+    def test_update_capa_actions_does_not_auto_complete_when_not_approved(self):
+        self._insert_report("r1")
+        db.update_report("r1", {"capa_status": "draft"})
+        with TestClient(app) as client:
+            response = client.post("/reports/r1/capa-actions", json={"actions_status": [True, True]})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["capa_status"], "draft")
+
     def _minimal_memo(self):
         return {
             "summary": "s",

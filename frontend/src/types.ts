@@ -114,6 +114,8 @@ export interface Memo {
   reviewer_note?: string;
 }
 
+export type CapaStatus = "draft" | "review" | "approved" | "completed";
+
 export interface TriageResult {
   report_id: string;
   protocol_id: string;
@@ -132,6 +134,7 @@ export interface TriageResult {
   memo: Memo | null;
   verification: Verification | null;
   capa_actions_status: boolean[] | null;
+  capa_status: CapaStatus | null;
   status: string;
   created_at: string;
   updated_at: string;

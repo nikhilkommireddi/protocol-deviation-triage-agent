@@ -1,5 +1,6 @@
 import type {
   AuditEvent,
+  CapaStatus,
   DeviationSubmission,
   ExtractedFields,
   ManagedSite,
@@ -88,6 +89,18 @@ export function updateCapaActionsStatus(
 
 export function getAuditTrail(reportId: string): Promise<AuditEvent[]> {
   return request<AuditEvent[]>(`/reports/${reportId}/audit`);
+}
+
+export function updateCapaStatus(
+  reportId: string,
+  status: CapaStatus,
+  actorName?: string,
+  actorRole?: string,
+): Promise<TriageResult> {
+  return request<TriageResult>(`/reports/${reportId}/capa-status`, {
+    method: "POST",
+    body: JSON.stringify({ status, actor_name: actorName, actor_role: actorRole }),
+  });
 }
 
 export function getReferenceData(): Promise<ReferenceData> {

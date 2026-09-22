@@ -43,6 +43,7 @@ class TriageResult(BaseModel):
     memo: dict | None = None
     verification: dict | None = None
     capa_actions_status: list[bool] | None = None
+    capa_status: str | None = None
     status: str
     created_at: str
     updated_at: str
@@ -69,6 +70,12 @@ class ReviewSubmission(BaseModel):
 
 class CapaActionsUpdate(BaseModel):
     actions_status: list[bool]
+    actor_name: str | None = None
+    actor_role: str | None = None
+
+
+class CapaStatusUpdate(BaseModel):
+    status: Literal["review", "approved", "completed"]
     actor_name: str | None = None
     actor_role: str | None = None
 

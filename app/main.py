@@ -21,6 +21,7 @@ from app.retry import call_with_retries
 from app.schemas import (
     AuditEvent,
     CapaActionsUpdate,
+    CapaStatusUpdate,
     DeviationSubmission,
     ExtractedFields,
     ProtocolExtraction,
@@ -39,6 +40,12 @@ from app.schemas import (
 MAX_PDF_SIZE_BYTES = 10 * 1024 * 1024
 MAX_PROTOCOL_PDF_SIZE_BYTES = 20 * 1024 * 1024  # real protocols run 80-150 pages
 SAFE_ID_PATTERN = re.compile(r"^[A-Za-z0-9._-]+$")
+
+CAPA_STATUS_TRANSITIONS = {
+    "draft": "review",
+    "review": "approved",
+    "approved": "completed",
+}
 
 
 @asynccontextmanager
@@ -189,7 +196,7 @@ def update_capa_actions(report_id: str, submission: CapaActionsUpdate):
     record = db.get_report(report_id)
     if record is None:
         raise HTTPException(status_code=404, detail="report not found")
-    db.update_report(report_id, {"capa_actions_status": submission.actions_status})
+    fields_to_update = {"capa_actions_status": submission.actions_status}
 
     completed = sum(1 for done in submission.actions_status if done)
     total = len(submission.actions_status)
@@ -197,6 +204,43 @@ def update_capa_actions(report_id: str, submission: CapaActionsUpdate):
         report_id,
         "capa_updated",
         f"CAPA actions updated ({completed}/{total} complete)",
+        actor_name=submission.actor_name,
+        actor_role=submission.actor_role,
+    )
+
+    current_capa_status = record.get("capa_status") or "draft"
+    if current_capa_status == "approved" and total > 0 and completed == total:
+        fields_to_update["capa_status"] = "completed"
+        _log_audit(
+            report_id,
+            "capa_status_changed",
+            "CAPA marked completed -- all actions done",
+            actor_name=submission.actor_name,
+            actor_role=submission.actor_role,
+        )
+
+    db.update_report(report_id, fields_to_update)
+    return db.get_report(report_id)
+
+
+@app.post("/reports/{report_id}/capa-status", response_model=TriageResult)
+def update_capa_status(report_id: str, submission: CapaStatusUpdate):
+    record = db.get_report(report_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="report not found")
+
+    current_capa_status = record.get("capa_status") or "draft"
+    if CAPA_STATUS_TRANSITIONS.get(current_capa_status) != submission.status:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid CAPA status transition from '{current_capa_status}' to '{submission.status}'.",
+        )
+
+    db.update_report(report_id, {"capa_status": submission.status})
+    _log_audit(
+        report_id,
+        "capa_status_changed",
+        f"CAPA status changed: {current_capa_status} -> {submission.status}",
         actor_name=submission.actor_name,
         actor_role=submission.actor_role,
     )

@@ -1,22 +1,30 @@
 import { useEffect, useState } from "react";
 import { CheckCircle2, Circle, Wrench } from "lucide-react";
-import { listReports, updateCapaActionsStatus } from "../api";
-import type { DemoUser, TriageResult } from "../types";
+import { listReports, updateCapaActionsStatus, updateCapaStatus } from "../api";
+import type { CapaStatus, DemoUser, TriageResult } from "../types";
 import { categoryBadgeClass } from "../lib/badges";
 import { useAuth } from "../context/AuthContext";
 import { can } from "../lib/permissions";
 import { PageHeader } from "./PageHeader";
 
-function isFullyCorrected(r: TriageResult): boolean {
-  const actions = r.memo?.recommended_capa_actions ?? [];
-  if (actions.length === 0) return false;
-  const status = r.capa_actions_status ?? [];
-  return actions.every((_, i) => status[i] === true);
-}
+const CAPA_STATUS_BADGE: Record<CapaStatus, string> = {
+  draft: "badge badge-slate",
+  review: "badge badge-amber",
+  approved: "badge badge-sky",
+  completed: "badge badge-green",
+};
+
+const CAPA_STATUS_LABEL: Record<CapaStatus, string> = {
+  draft: "Draft",
+  review: "Review",
+  approved: "Approved",
+  completed: "Completed",
+};
 
 export function CorrectQueue() {
   const { user } = useAuth();
   const canEdit = can(user, "correct.edit");
+  const canDecide = can(user, "review.decide");
   const [reports, setReports] = useState<TriageResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -45,20 +53,19 @@ export function CorrectQueue() {
   if (loading) return <p className="text-slate-500">Loading...</p>;
   if (error) return <p className="text-red-600">{error}</p>;
 
-  const open = reports.filter((r) => !isFullyCorrected(r));
-  const closed = reports.filter((r) => isFullyCorrected(r));
+  const open = reports.filter((r) => (r.capa_status ?? "draft") !== "completed");
+  const closed = reports.filter((r) => (r.capa_status ?? "draft") === "completed");
 
   return (
     <div>
       <PageHeader
         title="Correct"
-        subtitle="Track whether each approved memo's recommended CAPA actions actually get done"
+        subtitle="Track each approved deviation's CAPA plan -- from draft through review, approval, and completion"
       />
 
       {reports.length === 0 ? (
         <p className="text-slate-500">
-          No approved reports yet -- approve one from Review to start tracking its CAPA actions
-          here.
+          No approved reports yet -- approve one from Review to start tracking its CAPA plan here.
         </p>
       ) : (
         <div className="space-y-6">
@@ -71,6 +78,7 @@ export function CorrectQueue() {
                     key={r.report_id}
                     report={r}
                     canEdit={canEdit}
+                    canDecide={canDecide}
                     user={user}
                     onUpdated={handleUpdated}
                   />
@@ -80,13 +88,14 @@ export function CorrectQueue() {
           )}
           {closed.length > 0 && (
             <div>
-              <h3 className="text-sm font-medium text-slate-500 mb-3">Closed ({closed.length})</h3>
+              <h3 className="text-sm font-medium text-slate-500 mb-3">Completed ({closed.length})</h3>
               <div className="space-y-3">
                 {closed.map((r) => (
                   <CorrectCard
                     key={r.report_id}
                     report={r}
                     canEdit={canEdit}
+                    canDecide={canDecide}
                     user={user}
                     onUpdated={handleUpdated}
                   />
@@ -103,11 +112,13 @@ export function CorrectQueue() {
 function CorrectCard({
   report,
   canEdit,
+  canDecide,
   user,
   onUpdated,
 }: {
   report: TriageResult;
   canEdit: boolean;
+  canDecide: boolean;
   user: DemoUser | null;
   onUpdated: (updated: TriageResult) => void;
 }) {
@@ -115,9 +126,11 @@ function CorrectCard({
   const [status, setStatus] = useState<boolean[]>(
     report.capa_actions_status ?? actions.map(() => false),
   );
+  const [advancing, setAdvancing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const closed = actions.length > 0 && actions.every((_, i) => status[i] === true);
+  const capaStatus: CapaStatus = report.capa_status ?? "draft";
 
   async function toggle(index: number) {
     const next = [...status];
@@ -140,6 +153,19 @@ function CorrectCard({
     }
   }
 
+  async function advance(nextStatus: CapaStatus) {
+    setAdvancing(true);
+    setError(null);
+    try {
+      const updated = await updateCapaStatus(report.report_id, nextStatus, user?.name, user?.role);
+      onUpdated(updated);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update CAPA status.");
+    } finally {
+      setAdvancing(false);
+    }
+  }
+
   return (
     <div className="card">
       <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
@@ -153,15 +179,25 @@ function CorrectCard({
         </div>
         <div className="flex items-center gap-2">
           {!canEdit && <span className="text-[10px] uppercase tracking-wide text-slate-400">View only</span>}
-          <span className={closed ? "badge badge-green" : "badge badge-amber"}>
-            {closed ? "Closed" : "Open"}
-          </span>
+          <span className={CAPA_STATUS_BADGE[capaStatus]}>{CAPA_STATUS_LABEL[capaStatus]}</span>
         </div>
       </div>
+
+      {report.memo && (
+        <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-slate-500 mb-3">
+          <span>
+            <span className="font-medium text-slate-600">Owner:</span> {report.memo.responsible_party}
+          </span>
+          <span>
+            <span className="font-medium text-slate-600">Due:</span> {report.memo.target_resolution_date}
+          </span>
+        </div>
+      )}
+
       {actions.length === 0 ? (
         <p className="text-sm text-slate-400">No CAPA actions recorded for this memo.</p>
       ) : (
-        <ul className="space-y-2">
+        <ul className="space-y-2 mb-3">
           {actions.map((action, i) => (
             <li key={i} className="flex items-start gap-2">
               <button
@@ -184,6 +220,29 @@ function CorrectCard({
             </li>
           ))}
         </ul>
+      )}
+
+      {error && <p className="text-xs text-red-600 mb-2">{error}</p>}
+
+      {capaStatus === "draft" && canEdit && (
+        <button type="button" className="btn-secondary" disabled={advancing} onClick={() => advance("review")}>
+          Submit for Review
+        </button>
+      )}
+      {capaStatus === "review" && canDecide && (
+        <button type="button" className="btn-primary" disabled={advancing} onClick={() => advance("approved")}>
+          Approve CAPA
+        </button>
+      )}
+      {capaStatus === "approved" && canDecide && (
+        <button
+          type="button"
+          className="btn-secondary"
+          disabled={advancing}
+          onClick={() => advance("completed")}
+        >
+          Mark Completed
+        </button>
       )}
     </div>
   );

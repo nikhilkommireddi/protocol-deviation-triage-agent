@@ -118,8 +118,10 @@ class TestGraphNodes(unittest.TestCase):
 
         self.assertEqual(result["memo"], fake_memo)
         self.assertEqual(result["status"], "drafted")
+        self.assertEqual(result["capa_status"], "draft")
         record = db.get_report(ingested["report_id"])
         self.assertEqual(record["memo"], fake_memo)
+        self.assertEqual(record["capa_status"], "draft")
 
     def test_mock_queue_node(self):
         ingested = self._ingest()
