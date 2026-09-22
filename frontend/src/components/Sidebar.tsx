@@ -3,6 +3,7 @@ import {
   BookOpen,
   Building2,
   ClipboardList,
+  FileBarChart,
   Inbox,
   LayoutDashboard,
   ShieldAlert,
@@ -23,6 +24,7 @@ export type View =
   | "analytics"
   | "safety"
   | "sites"
+  | "reports"
   | "rules"
   | "subjects"
   | "admin";
@@ -83,7 +85,7 @@ export function Sidebar({ active, onNavigate }: SidebarProps) {
           />
         )}
 
-        {(can(user, "analytics") || can(user, "safety") || can(user, "sites")) && (
+        {(can(user, "analytics") || can(user, "safety") || can(user, "sites") || can(user, "reports")) && (
           <p className="sidebar-group-label">Oversight</p>
         )}
         {can(user, "analytics") && (
@@ -108,6 +110,14 @@ export function Sidebar({ active, onNavigate }: SidebarProps) {
             label="Sites"
             active={active === "sites"}
             onClick={() => onNavigate("sites")}
+          />
+        )}
+        {can(user, "reports") && (
+          <NavItem
+            icon={<FileBarChart className="w-4 h-4" />}
+            label="Reports"
+            active={active === "reports"}
+            onClick={() => onNavigate("reports")}
           />
         )}
 

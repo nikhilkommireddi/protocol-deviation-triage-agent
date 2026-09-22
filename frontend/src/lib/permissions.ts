@@ -16,6 +16,7 @@ export type Capability =
   | "analytics"
   | "safety"
   | "sites"
+  | "reports"
   | "rules"
   | "subjects"
   | "admin";
@@ -38,6 +39,7 @@ export const CAPABILITY_LABELS: Record<Capability, string> = {
   analytics: "View Analytics",
   safety: "View Safety Tracker",
   sites: "View Site History",
+  reports: "Generate Reports",
   rules: "View Rule Catalog",
   subjects: "View Subjects",
   admin: "View Administration",
@@ -53,6 +55,7 @@ export const ROLE_CAPABILITIES: Record<UserRole, Capability[]> = {
     "analytics",
     "safety",
     "sites",
+    "reports",
     "rules",
     "subjects",
   ],
@@ -66,6 +69,7 @@ export const ROLE_CAPABILITIES: Record<UserRole, Capability[]> = {
     "analytics",
     "safety",
     "sites",
+    "reports",
     "rules",
     "subjects",
   ],
@@ -75,6 +79,7 @@ export const ROLE_CAPABILITIES: Record<UserRole, Capability[]> = {
     "correct",
     "analytics",
     "sites",
+    "reports",
     "rules",
     "subjects",
     "admin",

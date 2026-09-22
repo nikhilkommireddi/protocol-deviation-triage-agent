@@ -91,6 +91,10 @@ export function getAuditTrail(reportId: string): Promise<AuditEvent[]> {
   return request<AuditEvent[]>(`/reports/${reportId}/audit`);
 }
 
+export function getAllAuditEvents(): Promise<AuditEvent[]> {
+  return request<AuditEvent[]>("/audit");
+}
+
 export function updateCapaStatus(
   reportId: string,
   status: CapaStatus,

@@ -410,12 +410,22 @@ def list_audit_events(report_id: str, db_path: Path | str | None = None) -> list
             "SELECT * FROM audit_events WHERE report_id = ? ORDER BY created_at ASC",
             (report_id,),
         ).fetchall()
-        events = []
-        for row in rows:
-            d = dict(row)
-            if d.get("details"):
-                d["details"] = json.loads(d["details"])
-            events.append(d)
-        return events
+        return [_audit_row_to_dict(row) for row in rows]
     finally:
         conn.close()
+
+
+def list_all_audit_events(db_path: Path | str | None = None) -> list[dict]:
+    conn = get_connection(db_path)
+    try:
+        rows = conn.execute("SELECT * FROM audit_events ORDER BY created_at ASC").fetchall()
+        return [_audit_row_to_dict(row) for row in rows]
+    finally:
+        conn.close()
+
+
+def _audit_row_to_dict(row: sqlite3.Row) -> dict:
+    d = dict(row)
+    if d.get("details"):
+        d["details"] = json.loads(d["details"])
+    return d

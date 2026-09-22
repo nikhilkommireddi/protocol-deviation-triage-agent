@@ -7,6 +7,7 @@ import { Analytics } from "./components/Analytics";
 import { CorrectQueue } from "./components/CorrectQueue";
 import { SafetyTracker } from "./components/SafetyTracker";
 import { Sites } from "./components/Sites";
+import { Reports } from "./components/Reports";
 import { RuleCatalog } from "./components/RuleCatalog";
 import { Subjects } from "./components/Subjects";
 import { Administration } from "./components/Administration";
@@ -40,6 +41,7 @@ function AppContent() {
         {view === "analytics" && <Analytics />}
         {view === "safety" && <SafetyTracker />}
         {view === "sites" && <Sites />}
+        {view === "reports" && <Reports />}
         {view === "rules" && <RuleCatalog />}
         {view === "subjects" && <Subjects />}
         {view === "admin" && <Administration />}

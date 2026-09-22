@@ -301,6 +301,23 @@ class TestReferenceAndCapaActionsEndpoints(unittest.TestCase):
             response = client.get("/reports/does-not-exist/audit")
         self.assertEqual(response.status_code, 404)
 
+    def test_get_all_audit_events_returns_events_across_reports_in_order(self):
+        self._insert_report("r1", status="drafted")
+        self._insert_report("r2", status="drafted")
+        with TestClient(app) as client:
+            client.post("/reports/r1/capa-actions", json={"actions_status": [False]})
+            client.post("/reports/r2/capa-actions", json={"actions_status": [False]})
+            response = client.get("/audit")
+
+        self.assertEqual(response.status_code, 200)
+        events = response.json()
+        report_ids = [e["report_id"] for e in events]
+        self.assertIn("r1", report_ids)
+        self.assertIn("r2", report_ids)
+        self.assertEqual(
+            [e["created_at"] for e in events], sorted(e["created_at"] for e in events)
+        )
+
 
 class TestUserAndSiteEndpoints(unittest.TestCase):
     def setUp(self):

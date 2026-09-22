@@ -255,6 +255,11 @@ def get_audit_trail(report_id: str):
     return db.list_audit_events(report_id)
 
 
+@app.get("/audit", response_model=list[AuditEvent])
+def get_all_audit_events():
+    return db.list_all_audit_events()
+
+
 @app.get("/reference", response_model=ReferenceData)
 def get_reference_data():
     labels_markdown = LABELS_PATH.read_text(encoding="utf-8")
