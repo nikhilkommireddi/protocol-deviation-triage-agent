@@ -9,6 +9,13 @@ COPY app/ ./app/
 COPY data/ ./data/
 COPY models/deviation-classifier/ ./models/deviation-classifier/
 
+# Railway's GitHub-connected build doesn't resolve Git LFS objects during
+# checkout, so model.safetensors above is just the small LFS pointer file
+# at this point, not the real 352MB weights. Overwrite it with the real
+# binary fetched directly from GitHub's public LFS media server (the repo
+# is public, so this needs no auth) -- see RAILWAY-TEAM-DEPLOY-GUIDE.md.
+RUN python -c "import urllib.request; urllib.request.urlretrieve('https://media.githubusercontent.com/media/nikhilkommireddi/protocol-deviation-triage-agent/main/models/deviation-classifier/model.safetensors', './models/deviation-classifier/model.safetensors')"
+
 EXPOSE 8000
 
 CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
