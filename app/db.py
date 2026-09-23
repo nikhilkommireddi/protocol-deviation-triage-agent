@@ -79,7 +79,11 @@ CREATE TABLE IF NOT EXISTS sites (
 
 
 def get_connection(db_path: Path | str | None = None) -> sqlite3.Connection:
-    conn = sqlite3.connect(str(db_path if db_path is not None else DB_PATH))
+    resolved_path = Path(db_path) if db_path is not None else DB_PATH
+    # sqlite3.connect creates the file itself but not missing parent dirs
+    # (e.g. a fresh Railway volume mount).
+    resolved_path.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(str(resolved_path))
     conn.row_factory = sqlite3.Row
     return conn
 
