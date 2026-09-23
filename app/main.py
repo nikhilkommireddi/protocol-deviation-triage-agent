@@ -1,4 +1,5 @@
 import json
+import os
 import re
 from contextlib import asynccontextmanager
 
@@ -56,11 +57,12 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Protocol Deviation Triage Agent", lifespan=lifespan)
 
-# Permissive for local dev against the Vite dev server. Tighten this to an
-# explicit allow-list before any real deployment.
+# Local dev origins are always allowed; CORS_ORIGINS adds deployed frontend
+# origins (comma-separated) without needing a code change per environment.
+_extra_origins = [o.strip() for o in os.environ.get("CORS_ORIGINS", "").split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", *_extra_origins],
     allow_methods=["*"],
     allow_headers=["*"],
 )

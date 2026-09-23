@@ -1,0 +1,16 @@
+{
+  "label2id": {
+    "administrative": 0,
+    "major": 1,
+    "minor": 2,
+    "technical": 3,
+    "unreported": 4
+  },
+  "id2label": {
+    "0": "administrative",
+    "1": "major",
+    "2": "minor",
+    "3": "technical",
+    "4": "unreported"
+  }
+}

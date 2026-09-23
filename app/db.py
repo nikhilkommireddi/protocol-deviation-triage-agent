@@ -8,12 +8,13 @@ existing minimal-dependency convention (see scripts/generate_synthetic_deviation
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
-DB_PATH = Path("triage.db")
+DB_PATH = Path(os.environ.get("DB_PATH", "triage.db"))
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS triage_records (

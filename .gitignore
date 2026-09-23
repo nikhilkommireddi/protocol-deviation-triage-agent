@@ -33,9 +33,12 @@ htmlcov/
 Thumbs.db
 Desktop.ini
 
-# Model artifacts (too large for git)
+# Model artifacts -- deviation-classifier is tracked via Git LFS (see
+# RAILWAY-TEAM-DEPLOY-GUIDE.md) so Railway's GitHub-connected build can
+# access it; everything else under models/ stays out of git.
 models/*
 !models/.gitkeep
+!models/deviation-classifier/
 
 # Runtime triage state (SQLite)
 *.db
