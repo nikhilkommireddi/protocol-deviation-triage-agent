@@ -543,6 +543,21 @@ class TestRetryAndFailureHandling(unittest.TestCase):
         with self.assertRaises(graph.TriageAgentError):
             graph.classify_node(state)
 
+    @patch("app.graph.CLASSIFIER_DEGRADE_ON_FAILURE", True)
+    @patch("app.graph.predict_category")
+    def test_classify_node_degrades_when_flagged(self, mock_predict):
+        mock_predict.side_effect = RuntimeError("model weights missing")
+        state = {"report_id": "r1", "text": "text"}
+
+        result = graph.classify_node(state)
+
+        self.assertEqual(result["category"], graph.CLASSIFIER_UNAVAILABLE_CATEGORY)
+        self.assertEqual(result["confidence"], 0.0)
+        events = db.list_audit_events("r1")
+        classify_events = [e for e in events if e["event_type"] == "ai_classified"]
+        self.assertEqual(len(classify_events), 1)
+        self.assertIn("unavailable", classify_events[0]["description"])
+
     @patch("app.graph.plan_investigation")
     def test_supervisor_node_fails_open_to_run_everything(self, mock_plan):
         mock_plan.side_effect = _fake_connection_error()

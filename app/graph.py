@@ -25,6 +25,7 @@ node.
 from __future__ import annotations
 
 import json
+import os
 import uuid
 from pathlib import Path
 from typing import TypedDict
@@ -631,16 +632,35 @@ def ingest_node(state: TriageState) -> dict:
     return {"report_id": report_id, "text": text, "status": "ingested"}
 
 
+CLASSIFIER_DEGRADE_ON_FAILURE = os.environ.get("CLASSIFIER_DEGRADE_ON_FAILURE") == "1"
+CLASSIFIER_UNAVAILABLE_CATEGORY = "administrative"
+
+
 def classify_node(state: TriageState) -> dict:
     try:
         category, confidence = predict_category(state["text"])
+        degraded = False
     except Exception as exc:
-        raise TriageAgentError(f"Classifier Agent failed: {exc}") from exc
+        if not CLASSIFIER_DEGRADE_ON_FAILURE:
+            raise TriageAgentError(f"Classifier Agent failed: {exc}") from exc
+        # Deliberately scoped to environments that set this flag (see
+        # RAILWAY-TEAM-DEPLOY-GUIDE.md) -- the classifier stays a critical
+        # agent everywhere else, matching CLAUDE.md. Adjudication reasons
+        # independently over the evidence anyway, so a placeholder category
+        # here doesn't silently stand in as a real signal.
+        category, confidence, degraded = CLASSIFIER_UNAVAILABLE_CATEGORY, 0.0, True
     db.update_report(state["report_id"], {"category": category, "confidence": confidence, "status": "classified"})
+    if degraded:
+        description = (
+            f"Classifier Agent unavailable -- defaulted to '{category}' pending "
+            "independent adjudication"
+        )
+    else:
+        description = f"AI classification generated: {category} (confidence {confidence:.0%})"
     _log_audit(
         state["report_id"],
         "ai_classified",
-        f"AI classification generated: {category} (confidence {confidence:.0%})",
+        description,
         actor_name="Classifier Agent",
         actor_role="AI System",
     )
