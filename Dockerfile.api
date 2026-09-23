@@ -7,7 +7,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app/ ./app/
 COPY data/ ./data/
-COPY railway_model/deviation-classifier/ ./models/deviation-classifier/
+COPY models/deviation-classifier/ ./models/deviation-classifier/
 
 EXPOSE 8000
 
