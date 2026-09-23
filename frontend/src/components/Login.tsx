@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ClipboardList, Inbox, ShieldCheck, ShieldQuestion, UserCog } from "lucide-react";
+import { ClipboardList, Inbox, ShieldCheck, UserCog } from "lucide-react";
 import { listUsers } from "../api";
 import { useAuth } from "../context/AuthContext";
 import { ROLE_INFO } from "../lib/permissions";
@@ -47,16 +47,7 @@ export function Login() {
         <div className="max-w-2xl w-full">
           <div className="mb-8">
             <h2 className="text-xl font-bold text-slate-900 mb-2">Sign in to your account</h2>
-            <p className="text-sm text-slate-500 max-w-lg">
-              Pick a user to log in as. This is a frontend-only mock login for demonstration
-              purposes -- there is no password check behind it, and every API endpoint remains
-              open regardless of which user you pick. The users themselves are real, persisted
-              records, managed from the Administration page.
-            </p>
-            <span className="inline-flex items-center gap-1.5 mt-3 badge badge-amber">
-              <ShieldQuestion className="w-3.5 h-3.5" />
-              Demo Mode -- not production authentication
-            </span>
+            <p className="text-sm text-slate-500 max-w-lg">Pick a user to log in as.</p>
           </div>
 
           {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
